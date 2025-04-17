@@ -1,4 +1,4 @@
-import { Input, Modal, Pagination, Select } from 'antd';
+import { Input, message, Modal, Pagination, Select } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { getAllBooks, getBookById, getBooksByCategory } from '../../services/bookService';
 import { getAllCategories } from '../../services/categoryService';
@@ -7,7 +7,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { formatCurrency } from '../../utils/FormatCurrency';
 import { debounce } from 'lodash';
 import Loading from '../../components/Loading';
+import { createCart } from '../../services/cartService';
+import useCart from '../../hooks/useCart';
 const Books = () => {
+    const { fetchCarts } = useCart();
     const [books, setBooks] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -95,6 +98,20 @@ const Books = () => {
         debounce((query) => fetchBooks(query), 300),
         [selectedCategory, currentPage],
     );
+
+    const handleAddCart = async (id, rental_fee) => {
+        setLoading(true);
+        try {
+            const response = await createCart(id, rental_fee);
+            fetchCarts();
+            fetchBooks(searchTerm);
+            message.success('Add book to cart successfully');
+        } catch (e) {
+            message.error(e.data.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div>
@@ -191,7 +208,10 @@ const Books = () => {
                                             </span>
                                         </span>
 
-                                        <button className="max-w-[130px] cursor-pointer rounded-[8px] border-[1px] bg-[#1B326D] p-[8px] text-white">
+                                        <button
+                                            className="max-w-[130px] cursor-pointer rounded-[8px] border-[1px] bg-[#1B326D] p-[8px] text-white"
+                                            onClick={() => handleAddCart(book.id, book.rental_fee)}
+                                        >
                                             Add to cart
                                         </button>
 
@@ -210,7 +230,6 @@ const Books = () => {
                 <Modal
                     open={isModalOpen}
                     onCancel={() => setIsModalOpen(false)}
-                    // closeIcon={false}
                     footer={null}
                     centered
                     width={1000}

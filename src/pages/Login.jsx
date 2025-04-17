@@ -8,8 +8,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import useAuth from '../hooks/useAuth';
 import { schemaLogin } from '../utils/ValidationForm';
 import { notification } from 'antd';
+import useCart from '../hooks/useCart';
 
 function Login() {
+    const { fetchCarts } = useCart();
     const { handleLogin } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const {
@@ -30,7 +32,6 @@ function Login() {
     }, [errors.email, errors.password]);
 
     const onSubmit = async (data) => {
-        console.log(data);
         const response = await handleLogin(data);
         if (response === 401) {
             notification.open({
@@ -39,7 +40,9 @@ function Login() {
                 description: 'Incorrect email or password',
                 duration: 2,
             });
+            return;
         }
+        fetchCarts();
     };
     return (
         <div className="flex flex-col items-center bg-[#F6F8FF] lg:flex-row">

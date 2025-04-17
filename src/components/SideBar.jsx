@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import logo from '../assets/logo.jpg';
 import {
+    faBookMedical,
     faBookOpen,
     faClockRotateLeft,
     faMoneyBillTransfer,
@@ -17,6 +18,11 @@ const SideBar = () => {
             label: 'Books',
             path: '/',
             icon: <FontAwesomeIcon icon={faBookOpen} />,
+        },
+        {
+            label: 'Book Carts',
+            path: '/carts',
+            icon: <FontAwesomeIcon icon={faBookMedical} />,
         },
         {
             label: 'Borrow History',

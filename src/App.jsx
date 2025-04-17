@@ -10,8 +10,13 @@ import Books from './pages/User/Books';
 import AdminBooks from './pages/Admin/Books';
 import AdminUsers from './pages/Admin/Users';
 import Dashboard from './pages/Admin/Dashboard';
+import AdminBorrowHistory from './pages/Admin/BorrowHistory';
+import AdminBorrowDetail from './pages/Admin/LoanBatchDetail';
 import CreateBook from './components/Admin/Books/CreateBook';
 import BookDetail from './components/Admin/Books/BookDetail';
+import Carts from './pages/User/Carts';
+import BorrowHistory from './pages/User/BorrowHistory';
+import LoanBatchDetail from './pages/User/LoanBatchDetail';
 const roles = {
     user: 'USER',
     admin: 'ADMIN',
@@ -29,6 +34,9 @@ function App() {
                     <Route element={<PrivateRoutes allowedRoles={[roles.user, roles.admin]} />}>
                         <Route path="/" element={<Layout />}>
                             <Route index element={<Books />} />
+                            <Route path="/carts" element={<Carts />} />
+                            <Route path="/borrowHistory" element={<BorrowHistory />} />
+                            <Route path="/borrowHistory/:id" element={<LoanBatchDetail />} />
                         </Route>
 
                         <Route element={<PrivateRoutes allowedRoles={[roles.admin]} />}>
@@ -36,6 +44,8 @@ function App() {
                                 <Route index element={<Dashboard />} />
                                 <Route path="users" element={<AdminUsers />} />
                                 <Route path="books" element={<AdminBooks />} />
+                                <Route path="borrowHistory" element={<AdminBorrowHistory />} />
+                                <Route path="borrowDetail/:id" element={<AdminBorrowDetail />} />
                                 <Route path="books/:id" element={<BookDetail />} />
                                 <Route path="books/create" element={<CreateBook />} />
                             </Route>
