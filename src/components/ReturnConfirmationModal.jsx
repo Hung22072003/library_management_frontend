@@ -21,6 +21,7 @@ const ReturnConfirmationModal = ({ visible, onClose, batchId, loanDetails }) => 
                 returns: loanDetails.map((detail) => {
                     const bookId = detail.book_id;
                     return {
+                        copy_id: detail.copy_id,
                         book_id: bookId,
                         note: values[`note_${bookId}`] || '',
                         returned_condition: values[`condition_${bookId}`] || 'good',
@@ -55,7 +56,13 @@ const ReturnConfirmationModal = ({ visible, onClose, batchId, loanDetails }) => 
                 <Button key="cancel" onClick={() => onClose(false)}>
                     Cancel
                 </Button>,
-                <Button key="submit" type="primary" loading={loading} onClick={handleSubmit}>
+                <Button
+                    key="submit"
+                    type="primary"
+                    loading={loading}
+                    onClick={handleSubmit}
+                    style={{ backgroundColor: '#1B326D' }}
+                >
                     Confirm Return
                 </Button>,
             ]}

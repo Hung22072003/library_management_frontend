@@ -6,6 +6,7 @@ const BatchDetailContext = createContext();
 
 export const BatchDetailProvider = ({ children }) => {
     const [batchDetail, setBatchDetail] = useState(null);
+    const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -14,6 +15,7 @@ export const BatchDetailProvider = ({ children }) => {
             setLoading(true);
             const response = await getBatchById(batchId);
             setBatchDetail(response.data.data);
+            setTransactions(response.data.data.transactions || []);
             setError(null);
         } catch (err) {
             setError('Failed to load batch details');
@@ -57,9 +59,11 @@ export const BatchDetailProvider = ({ children }) => {
                 batchDetail,
                 loading,
                 error,
+                transactions,
                 loadBatchDetail,
                 handleCancelBatch,
                 handleConfirmBorrowed,
+                setLoading,
             }}
         >
             {children}

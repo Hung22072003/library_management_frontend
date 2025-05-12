@@ -151,10 +151,10 @@ const BooksList = () => {
                                     <th className="min-w-[180px] px-4 py-3 text-left">Author</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Genre</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Publication Year</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Rental fee</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Available Copies</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Total Copies</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Status</th>
+                                    <th className="min-w-[180px] px-4 py-3 text-left"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -184,7 +184,6 @@ const BooksList = () => {
                                             {book.categories && book.categories.map((a) => a.name).join(', ')}
                                         </td>
                                         <td className="px-4 py-3">{book.publication_year}</td>
-                                        <td className="px-4 py-3">{formatCurrency(book.rental_fee)}</td>
 
                                         <td className="px-4 py-3 text-center">{book.available_copies}</td>
                                         <td className="px-4 py-3 text-center">{book.total_copies}</td>
@@ -198,6 +197,11 @@ const BooksList = () => {
                                             >
                                                 {!book.deleted_at ? 'Active' : 'Inactive'}
                                             </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <a href={`/admin/books/${book.id}/copies`} className="hover:font-bold">
+                                                Book Copies
+                                            </a>
                                         </td>
                                     </tr>
                                 ))}

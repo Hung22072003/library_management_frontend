@@ -8,8 +8,8 @@ const deleteCart = (id) => {
     return axios.delete(`api/carts/${id}`);
 };
 
-const createCart = (book_id, rental_fee) => {
-    return axios.post('api/carts', { book_id, rental_fee });
+const createCart = (book_id, copy_id) => {
+    return axios.post('api/carts', { book_id, copy_id });
 };
 
 export { getCartsOfUser, deleteCart, createCart };

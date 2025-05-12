@@ -18,7 +18,6 @@ const createBook = (values, thumbnail) => {
     formData.append('description', values.description);
     formData.append('publication_year', values.publication_year);
     formData.append('isbn', values.isbn);
-    formData.append('rental_fee', values.rental_fee);
     formData.append('available_copies', values.total_copies);
     formData.append('total_copies', values.total_copies);
 
@@ -74,4 +73,17 @@ const deleteBook = (id) => {
 const restoreBook = (id) => {
     return axios.post(`/api/books/${id}`);
 };
-export { getAllBooks, getBookById, getBooksByCategory, createBook, updateBook, deleteBook, restoreBook };
+
+const getAllBookCopiesOfOneBook = (id) => {
+    return axios.get(`/api/books/bookcopies/${id}`);
+};
+export {
+    getAllBooks,
+    getBookById,
+    getBooksByCategory,
+    createBook,
+    updateBook,
+    deleteBook,
+    restoreBook,
+    getAllBookCopiesOfOneBook,
+};

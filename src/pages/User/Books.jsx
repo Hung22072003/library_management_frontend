@@ -1,6 +1,6 @@
 import { Input, message, Modal, Pagination, Select } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
-import { getAllBooks, getBookById, getBooksByCategory } from '../../services/bookService';
+import { getAllBookCopiesOfOneBook, getAllBooks, getBookById, getBooksByCategory } from '../../services/bookService';
 import { getAllCategories } from '../../services/categoryService';
 import { faSearch, faArrowDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,18 +9,24 @@ import { debounce } from 'lodash';
 import Loading from '../../components/Loading';
 import { createCart } from '../../services/cartService';
 import useCart from '../../hooks/useCart';
+import { formatDate } from '../../utils/FormatDateTime';
+
 const Books = () => {
     const { fetchCarts } = useCart();
     const [books, setBooks] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalBooks, setTotalBooks] = useState();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [bookCopies, setBookCopies] = useState([]);
+    const [selectedCopy, setSelectedCopy] = useState(null);
+    const [isCopiesModalOpen, setIsCopiesModalOpen] = useState(false);
+    const [currentBookId, setCurrentBookId] = useState(null);
+    const [currentRentalFee, setCurrentRentalFee] = useState(null);
     const size = 6;
 
     const handleSelectCategory = (value) => {
@@ -31,6 +37,23 @@ const Books = () => {
 
     const showModal = () => {
         setIsModalOpen(true);
+    };
+
+    const showCopiesModal = async (bookId) => {
+        setCurrentBookId(bookId);
+
+        try {
+            const response = await getAllBookCopiesOfOneBook(bookId);
+            const result = response.data.data;
+
+            // Filter only available copies
+            const availableCopies = result.filter((copy) => copy.status === 'available');
+            setBookCopies(availableCopies);
+            setIsCopiesModalOpen(true);
+        } catch (error) {
+            message.error('Error fetching book copies');
+            console.error(error);
+        }
     };
 
     const handleViewDetail = (id) => {
@@ -58,7 +81,7 @@ const Books = () => {
             setTotalBooks(response.data.data.total);
             setLoading(false);
         } else {
-            setError('Failed to fetch books');
+            message.error('Failed to fetch books');
             setLoading(false);
         }
     };
@@ -70,7 +93,7 @@ const Books = () => {
             setCategories(response.data.data);
             setLoading(false);
         } else {
-            setError('Failed to fetch categories');
+            message.error('Failed to fetch categories');
             setLoading(false);
         }
     };
@@ -82,7 +105,7 @@ const Books = () => {
             setSelectedBook(response.data.data);
             showModal();
         } else {
-            setError('Failed to fetch book detail');
+            message.error('Failed to fetch book detail');
         }
     };
 
@@ -99,18 +122,26 @@ const Books = () => {
         [selectedCategory, currentPage],
     );
 
-    const handleAddCart = async (id, rental_fee) => {
-        setLoading(true);
+    const handleAddCart = async () => {
+        if (!selectedCopy) {
+            message.error('Please select a book copy');
+            return;
+        }
+
         try {
-            const response = await createCart(id, rental_fee);
+            await createCart(currentBookId, selectedCopy.id);
             fetchCarts();
             fetchBooks(searchTerm);
-            message.success('Add book to cart successfully');
+            message.success('Book added to cart successfully');
+            setIsCopiesModalOpen(false);
+            setSelectedCopy(null);
         } catch (e) {
-            message.error(e.data.message);
-        } finally {
-            setLoading(false);
+            message.error(e.data?.message || 'Failed to add book to cart');
         }
+    };
+
+    const handleCopySelect = (copy) => {
+        setSelectedCopy(copy);
     };
 
     return (
@@ -202,15 +233,16 @@ const Books = () => {
                                             <span className="font-medium text-[#1B326D]">{book.available_copies}</span>
                                         </span>
                                         <span className="text-[#9b9c9d]">
-                                            Rental fee:{' '}
+                                            Genre:{' '}
                                             <span className="font-medium text-[#1B326D]">
-                                                {formatCurrency(book.rental_fee)}
+                                                {book.categories && book.categories.map((a) => a.name).join(', ')}
                                             </span>
                                         </span>
 
                                         <button
                                             className="max-w-[130px] cursor-pointer rounded-[8px] border-[1px] bg-[#1B326D] p-[8px] text-white"
-                                            onClick={() => handleAddCart(book.id, book.rental_fee)}
+                                            onClick={() => showCopiesModal(book.id)}
+                                            disabled={book.available_copies <= 0}
                                         >
                                             Add to cart
                                         </button>
@@ -227,6 +259,7 @@ const Books = () => {
                     </div>
                 )}
 
+                {/* Book Details Modal */}
                 <Modal
                     open={isModalOpen}
                     onCancel={() => setIsModalOpen(false)}
@@ -265,24 +298,11 @@ const Books = () => {
                                     <span className="ml-[4px] text-[#1B326D]">{selectedBook.isbn}</span>
                                 </p>
                                 <p className="mt-[12px] font-semibold text-[#9b9c9d]">
-                                    Rental Fee:
-                                    <span className="ml-[4px] text-[#1B326D]">
-                                        {formatCurrency(selectedBook.rental_fee)}
-                                    </span>
-                                </p>
-                                <p className="mt-[12px] font-semibold text-[#9b9c9d]">
                                     Available Copies:
                                     <span className="ml-[4px] text-[#1B326D]">
                                         {selectedBook.available_copies} / {selectedBook.total_copies}
                                     </span>
                                 </p>
-
-                                {/* <button className="mt-[12px] min-w-[180px] cursor-pointer rounded-[8px] border-[1px] bg-[#1B326D] p-[8px] text-white">
-                                    Add to cart
-                                </button> */}
-                                {selectedBook.deleted_at && (
-                                    <p className="mt-2 text-red-600">This book has been removed</p>
-                                )}
 
                                 <p className="mt-4 font-semibold text-[#9b9c9d]">Description:</p>
 
@@ -290,6 +310,70 @@ const Books = () => {
                             </div>
                         </div>
                     )}
+                </Modal>
+
+                {/* Book Copies Modal */}
+                <Modal
+                    title="Select Book Copy"
+                    open={isCopiesModalOpen}
+                    onCancel={() => {
+                        setIsCopiesModalOpen(false);
+                        setSelectedCopy(null);
+                    }}
+                    footer={[
+                        <button
+                            key="cancel"
+                            onClick={() => {
+                                setIsCopiesModalOpen(false);
+                                setSelectedCopy(null);
+                            }}
+                            className="mr-2 rounded-[8px] border border-gray-300 px-4 py-2"
+                        >
+                            Cancel
+                        </button>,
+                        <button
+                            key="submit"
+                            onClick={handleAddCart}
+                            disabled={!selectedCopy}
+                            className={`rounded-[8px] px-4 py-2 text-white ${
+                                selectedCopy ? 'cursor-pointer bg-[#1B326D]' : 'cursor-not-allowed bg-gray-400'
+                            }`}
+                        >
+                            Add to Cart
+                        </button>,
+                    ]}
+                    centered
+                    width={600}
+                >
+                    <div className="max-h-[435px] overflow-y-auto">
+                        {bookCopies.length === 0 ? (
+                            <p className="text-center text-red-500">No available copies for this book</p>
+                        ) : (
+                            <div className="grid gap-3">
+                                {bookCopies.map((copy) => (
+                                    <div
+                                        key={copy.id}
+                                        className={`cursor-pointer rounded-lg border p-4 ${
+                                            selectedCopy?.id === copy.id
+                                                ? 'border-[#1B326D] bg-blue-50'
+                                                : 'border-gray-200'
+                                        }`}
+                                        onClick={() => handleCopySelect(copy)}
+                                    >
+                                        <div className="flex justify-between">
+                                            <div>
+                                                <p className="font-medium text-[#1B326D]">Copy ID: {copy.id}</p>
+                                                <p className="text-sm text-gray-600">Status: {copy.status}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-600">Condition: {copy.condition}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </Modal>
             </div>
         </div>

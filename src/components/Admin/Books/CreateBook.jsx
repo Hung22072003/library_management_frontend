@@ -129,7 +129,7 @@ const CreateBook = () => {
                         />
                     </Form.Item>
 
-                    <Form.Item
+                    {/* <Form.Item
                         label="Rental Fee"
                         name="rental_fee"
                         rules={[{ required: true, message: 'Rental Fee is required' }]}
@@ -143,7 +143,7 @@ const CreateBook = () => {
                             placeholder="Enter rental fee"
                             className="w-full"
                         />
-                    </Form.Item>
+                    </Form.Item> */}
 
                     <Form.Item
                         label="Total Copies"

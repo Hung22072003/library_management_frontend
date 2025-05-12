@@ -35,7 +35,6 @@ const BookDetail = () => {
                 description: book.description,
                 publication_year: book.publication_year,
                 isbn: book.isbn,
-                rental_fee: book.rental_fee,
                 available_copies: book.available_copies,
                 total_copies: book.total_copies,
                 categories: book.categories.map((cat) => cat.id), // Giả sử categories là mảng đối tượng
@@ -185,7 +184,7 @@ const BookDetail = () => {
                         />
                     </Form.Item>
 
-                    <Form.Item
+                    {/* <Form.Item
                         label="Rental Fee"
                         name="rental_fee"
                         rules={[{ required: true, message: 'Rental Fee is required' }]}
@@ -196,7 +195,7 @@ const BookDetail = () => {
                             controls={false}
                             placeholder="Enter rental fee"
                         />
-                    </Form.Item>
+                    </Form.Item> */}
 
                     <Form.Item
                         label="Available Copies"

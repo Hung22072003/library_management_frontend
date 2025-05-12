@@ -67,12 +67,12 @@ const BorrowHistory = () => {
                             <thead className="bg-gray-100 text-[16px] text-[#1B326D]">
                                 <tr>
                                     <th className="min-w-[30px] px-4 py-3 text-left">ID</th>
+                                    <th className="min-w-[180px] px-4 py-3 text-left">Status</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Borrow Date</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Due Date</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Return Date</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Expired Borrow Date</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Extend Date</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -87,11 +87,6 @@ const BorrowHistory = () => {
                                                 {batch.id}
                                             </Link>
                                         </td>
-                                        <td className="px-4 py-3">{formatDate(batch.borrowed_at)}</td>
-                                        <td className="px-4 py-3">{formatDate(batch.due_at)}</td>
-                                        <td className="px-4 py-3">{formatDate(batch.return_at)}</td>
-                                        <td className="px-4 py-3">{formatDate(batch.expired_at)}</td>
-                                        <td className="px-4 py-3">{formatDate(batch.extended_at)}</td>
                                         <td className="px-4 py-3">
                                             <span
                                                 className={`rounded-md px-2 py-1 text-xs font-medium capitalize ${statusColors[batch.status]}`}
@@ -99,6 +94,11 @@ const BorrowHistory = () => {
                                                 {batch.status}
                                             </span>
                                         </td>
+                                        <td className="px-4 py-3">{formatDate(batch.borrowed_at)}</td>
+                                        <td className="px-4 py-3">{formatDate(batch.due_at)}</td>
+                                        <td className="px-4 py-3">{formatDate(batch.return_at)}</td>
+                                        <td className="px-4 py-3">{formatDate(batch.expired_at)}</td>
+                                        <td className="px-4 py-3">{formatDate(batch.extended_at)}</td>
                                     </tr>
                                 ))}
                             </tbody>

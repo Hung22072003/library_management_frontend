@@ -1,14 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Descriptions, Table, Button, Popconfirm, Empty, Divider, Space, Modal, DatePicker, message } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+    Card,
+    Descriptions,
+    Table,
+    Button,
+    Popconfirm,
+    Empty,
+    Divider,
+    Space,
+    Modal,
+    DatePicker,
+    message,
+    Input,
+    InputNumber,
+} from 'antd';
 import dayjs from 'dayjs';
-import { CloseCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { useParams } from 'react-router-dom';
+import { CloseCircleOutlined, ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { Link, useParams } from 'react-router-dom';
 import useBatchDetail from '../../hooks/useBatchDetail';
 import Loading from '../../components/Loading';
 import { formatDate } from '../../utils/FormatDateTime';
 import { formatCurrency } from '../../utils/FormatCurrency';
 import ReturnConfirmationModal from '../../components/ReturnConfirmationModal';
 import { extendBatch } from '../../services/loanService';
+import { createTransaction, getTransactionsOfLoanBatch } from '../../services/transactionService';
 
 // Status tag colors mapping
 const statusColors = {
@@ -22,13 +37,35 @@ const statusColors = {
 
 const LoanBatchDetail = () => {
     const { id } = useParams();
-    const { batchDetail, loading, loadBatchDetail, handleCancelBatch, handleConfirmBorrowed } = useBatchDetail();
+    const { batchDetail, loading, loadBatchDetail, transactions, handleCancelBatch, handleConfirmBorrowed } =
+        useBatchDetail();
     const [returnModalVisible, setReturnModalVisible] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
+    const [feeData, setFeeData] = useState({});
+    const [createFeeModalVisible, setCreateFeeModalVisible] = useState(false);
+    const [currentCopyId, setCurrentCopyId] = useState(null);
+    const [currentCondition, setCurrentCondition] = useState(null);
+    const [feeAmount, setFeeAmount] = useState(0);
+    const [feeNote, setFeeNote] = useState('');
+
     useEffect(() => {
         loadBatchDetail(id);
     }, [id]);
+
+    useEffect(() => {
+        const feeMap = {};
+        transactions.forEach((transaction) => {
+            feeMap[transaction.copy_id] = transaction;
+        });
+        setFeeData(feeMap);
+    }, [transactions]);
+
+    const totalFee = useMemo(() => {
+        return transactions.reduce((total, transaction) => {
+            return total + parseInt(transaction.amount);
+        }, 0);
+    }, [transactions]);
 
     const handleConfirmReturned = () => {
         setReturnModalVisible(true);
@@ -67,6 +104,49 @@ const LoanBatchDetail = () => {
             console.error(err);
         }
     };
+
+    const showCreateFeeModal = (copyId, condition) => {
+        setCurrentCopyId(copyId);
+        setCurrentCondition(condition);
+        setFeeAmount(0);
+        setFeeNote('');
+        setCreateFeeModalVisible(true);
+    };
+
+    const getType = (condition) => {
+        switch (condition) {
+            case 'damaged':
+                return 'damaged_fee';
+            case 'lost':
+                return 'lost_fee';
+            default:
+                return 'other';
+        }
+    };
+    const handleCreateFee = async () => {
+        if (!feeAmount || feeAmount <= 0) {
+            message.error('Please enter a valid fee amount');
+            return;
+        }
+        try {
+            await createTransaction({
+                type: getType(currentCondition),
+                amount: feeAmount,
+                note: feeNote,
+                copy_id: currentCopyId,
+                batch_id: batchDetail.id,
+                user_id: batchDetail.user_id,
+            });
+
+            message.success('Fee created successfully');
+            setCreateFeeModalVisible(false);
+            loadBatchDetail(batchDetail.id);
+        } catch (err) {
+            console.error('Error creating fee:', err);
+            message.error('Failed to create fee');
+        }
+    };
+
     const canCancelConfirom = batchDetail && ['pending'].includes(batchDetail.status);
     const canReturned = batchDetail && ['borrowed', 'overdue'].includes(batchDetail.status);
     const canExtend = batchDetail && !batchDetail.extended_at && ['borrowed'].includes(batchDetail.status);
@@ -76,11 +156,12 @@ const LoanBatchDetail = () => {
             title: 'ID',
             dataIndex: 'id',
             key: 'id',
-            width: 60,
+            width: 200,
         },
         {
             title: 'Book',
             key: 'book',
+            width: 200,
             render: (_, record) => {
                 const book = record.book;
                 return (
@@ -92,34 +173,59 @@ const LoanBatchDetail = () => {
             },
         },
         {
-            title: 'Returned At',
-            dataIndex: 'returned_at',
-            key: 'returned_at',
-            render: (text) => formatDate(text),
+            title: 'Copy ID',
+            dataIndex: 'copy_id',
+            key: 'copy_id',
+            width: 150,
+            render: (text) => (
+                <span
+                    onClick={() => {
+                        window.location.href = `/admin/copies/${text}`;
+                    }}
+                    className="cursor-pointer hover:font-bold"
+                >
+                    {text}
+                </span>
+            ),
         },
         {
             title: 'Condition',
             dataIndex: 'returned_condition',
             key: 'returned_condition',
+            width: 60,
             render: (text) => text || 'N/A',
-        },
-        {
-            title: 'Rental Fee',
-            dataIndex: 'rental_fee',
-            key: 'rental_fee',
-            render: (fee) => formatCurrency(fee),
-        },
-        {
-            title: 'Late Fee (Per Day)',
-            dataIndex: 'late_fee_per_day',
-            key: 'late_fee_per_day',
-            render: (fee) => formatCurrency(fee),
         },
         {
             title: 'Note',
             dataIndex: 'note',
             key: 'note',
             render: (text) => text || 'N/A',
+        },
+        {
+            title: 'Fee',
+            key: 'fee',
+            width: 200,
+            render: (_, record) => {
+                const copyFee = feeData[record.copy_id];
+                if (copyFee) {
+                    return <div className="font-medium">{formatCurrency(copyFee.amount)}</div>;
+                }
+
+                if (record.returned_condition === 'good' || !record.returned_condition) {
+                    return <div className="font-medium">{formatCurrency(0)}</div>;
+                }
+                return (
+                    <Button
+                        size="middle"
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => showCreateFeeModal(record.copy_id, record.returned_condition)}
+                        style={{ backgroundColor: '#1B326D' }}
+                    >
+                        Create Fee
+                    </Button>
+                );
+            },
         },
     ];
 
@@ -146,7 +252,7 @@ const LoanBatchDetail = () => {
                         Back
                     </Button>
 
-                    <h1 className="ml-[12px] text-[20px] font-bold text-[#1B326D]"> Batch Details #{batchDetail.id}</h1>
+                    <h1 className="ml-[12px] text-[20px] font-bold text-[#1B326D]"> Batch Details</h1>
                 </Space>
 
                 <div>
@@ -203,14 +309,14 @@ const LoanBatchDetail = () => {
                 <Descriptions.Item label="Extended Date">
                     {formatDate(batchDetail.extended_at) || 'Not Extended'}
                 </Descriptions.Item>
-                <Descriptions.Item label="Total Rental Fee">{formatCurrency(totalRentalFee)}</Descriptions.Item>
+                <Descriptions.Item label="Total Fee">{formatCurrency(totalFee)}</Descriptions.Item>
             </Descriptions>
 
             <Divider orientation="left" style={{ color: '#1B326D' }}>
-                Loan Details
+                Details
             </Divider>
 
-            <Table dataSource={batchDetail.loan_details} columns={columns} rowKey="id" pagination={false} />
+            <Table dataSource={batchDetail.loan_details} columns={columns} rowKey="id" pagination={false} bordered />
             {batchDetail && (
                 <ReturnConfirmationModal
                     visible={returnModalVisible}
@@ -238,6 +344,37 @@ const LoanBatchDetail = () => {
                         }}
                         onChange={(date) => setSelectedDate(date)}
                     />
+                </div>
+            </Modal>
+
+            <Modal
+                title="Create Fee"
+                open={createFeeModalVisible}
+                onOk={handleCreateFee}
+                onCancel={() => setCreateFeeModalVisible(false)}
+                okText="Create"
+                cancelText="Cancel"
+            >
+                <div className="flex flex-col gap-4">
+                    <div>
+                        <label className="mb-1 block text-sm font-medium">Fee Amount:</label>
+                        <InputNumber
+                            className="w-full"
+                            min={0}
+                            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                            onChange={(value) => setFeeAmount(value)}
+                            placeholder="Enter fee amount"
+                        />
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-sm font-medium">Note:</label>
+                        <Input.TextArea
+                            rows={3}
+                            onChange={(e) => setFeeNote(e.target.value)}
+                            placeholder="Add a note about the fee (e.g., reason for damage)"
+                        />
+                    </div>
                 </div>
             </Modal>
         </Card>

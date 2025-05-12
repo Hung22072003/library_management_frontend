@@ -71,8 +71,7 @@ const Carts = () => {
                                     </div>
 
                                     <div className="mt-2 text-[14px]">
-                                        <span className="font-medium text-[#1B326D]">Rental fee:</span>{' '}
-                                        {formatCurrency(cart.rental_fee)}
+                                        <span className="font-medium text-[#1B326D]">Copy ID:</span> {cart.copy_id}
                                     </div>
                                 </div>
                             </div>
