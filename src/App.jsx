@@ -22,6 +22,8 @@ import BookCopyDetail from './pages/Admin/BookCopyDetail';
 import AdminTransactions from './pages/Admin/Transactions';
 import ConfirmTransaction from './pages/ConfirmTransaction';
 import Transactions from './pages/User/Transactions';
+import Notifications from './pages/User/Notifications';
+import Chat from './pages/User/Chat';
 const roles = {
     user: 'USER',
     admin: 'ADMIN',
@@ -43,6 +45,8 @@ function App() {
                             <Route path="/borrowHistory" element={<BorrowHistory />} />
                             <Route path="/borrowHistory/:id" element={<LoanBatchDetail />} />
                             <Route path="/transactions" element={<Transactions />} />
+                            <Route path="/notifications" element={<Notifications />} />
+                            <Route path="/chat" element={<Chat />} />
                         </Route>
 
                         <Route element={<PrivateRoutes allowedRoles={[roles.admin]} />}>
@@ -55,7 +59,7 @@ function App() {
                                 <Route path="books/create" element={<CreateBook />} />
                                 <Route path="copies/:id" element={<BookCopyDetail />} />
                                 <Route path="borrowHistory" element={<AdminBorrowHistory />} />
-                                <Route path="borrowDetail/:id" element={<AdminBorrowDetail />} />
+                                <Route path="borrowHistory/:id" element={<AdminBorrowDetail />} />
                                 <Route path="transactions" element={<AdminTransactions />} />
                             </Route>
                         </Route>
