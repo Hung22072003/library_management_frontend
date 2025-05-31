@@ -78,7 +78,7 @@ const BorrowHistory = () => {
                                 <tr>
                                     <th className="min-w-[30px] px-4 py-3 text-left">ID</th>
                                     <th className="min-w-[150px] px-4 py-3 text-left">Status</th>
-                                    <th className="min-w-[30px] px-4 py-3 text-left">User ID</th>
+                                    <th className="min-w-[100px] px-4 py-3 text-left">User ID</th>
                                     <th className="min-w-[150px] px-4 py-3 text-left">Borrow Date</th>
                                     <th className="min-w-[150px] px-4 py-3 text-left">Due Date</th>
                                     <th className="min-w-[150px] px-4 py-3 text-left">Return Date</th>
@@ -91,7 +91,7 @@ const BorrowHistory = () => {
                                     <tr key={batch.id} className="text-[14px] text-[#1B326D] hover:bg-gray-50">
                                         <td className="px-4 py-3">
                                             <Link
-                                                to={`/admin/borrowDetail/${batch.id}`}
+                                                to={`/admin/borrowHistory/${batch.id}`}
                                                 className="max-w-xs truncate hover:font-bold"
                                                 title={batch.id}
                                             >

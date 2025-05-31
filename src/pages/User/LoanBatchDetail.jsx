@@ -15,13 +15,14 @@ import {
     InputNumber,
 } from 'antd';
 import dayjs from 'dayjs';
-import { CloseCircleOutlined, ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseCircleOutlined, ArrowLeftOutlined, PlusOutlined, CheckOutlined } from '@ant-design/icons';
 import { Link, useParams } from 'react-router-dom';
 import useBatchDetail from '../../hooks/useBatchDetail';
 import Loading from '../../components/Loading';
 import { formatDate } from '../../utils/FormatDateTime';
 import { formatCurrency } from '../../utils/FormatCurrency';
 import ReturnConfirmationModal from '../../components/ReturnConfirmationModal';
+import SingleReturnModal from '../../components/SingleReturnModal'; // Assume this component exists
 import { extendBatch } from '../../services/loanService';
 import { createTransaction, getTransactionsOfLoanBatch } from '../../services/transactionService';
 
@@ -40,6 +41,8 @@ const LoanBatchDetail = () => {
     const { batchDetail, loading, loadBatchDetail, transactions, handleCancelBatch, handleConfirmBorrowed } =
         useBatchDetail();
     const [returnModalVisible, setReturnModalVisible] = useState(false);
+    const [singleReturnModalVisible, setSingleReturnModalVisible] = useState(false);
+    const [selectedDetail, setSelectedDetail] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
     const [feeData, setFeeData] = useState({});
@@ -73,6 +76,19 @@ const LoanBatchDetail = () => {
 
     const handleReturnModalClose = (shouldRefresh) => {
         setReturnModalVisible(false);
+        if (shouldRefresh) {
+            loadBatchDetail(id);
+        }
+    };
+
+    const handleSingleReturn = (detail) => {
+        setSelectedDetail(detail);
+        setSingleReturnModalVisible(true);
+    };
+
+    const handleSingleReturnModalClose = (shouldRefresh) => {
+        setSingleReturnModalVisible(false);
+        setSelectedDetail(null);
         if (shouldRefresh) {
             loadBatchDetail(id);
         }
@@ -152,12 +168,6 @@ const LoanBatchDetail = () => {
 
     const columns = [
         {
-            title: 'ID',
-            dataIndex: 'id',
-            key: 'id',
-            width: 200,
-        },
-        {
             title: 'Book',
             key: 'book',
             width: 200,
@@ -166,7 +176,7 @@ const LoanBatchDetail = () => {
                 return (
                     <div>
                         <div className="font-medium">{book ? book.title : `Book #${record.book_id}`}</div>
-                        {book && <div className="text-xs text-gray-500">ISBN: {book.isbn || 'N/A'}</div>}
+                        {book && <div className="text-xs text-gray-500">ISBN: {book.isbn13 || book.isbn10}</div>}
                     </div>
                 );
             },
@@ -188,6 +198,31 @@ const LoanBatchDetail = () => {
             ),
         },
         {
+            title: 'Status',
+            dataIndex: 'borrowed_status',
+            key: 'borrowed_status',
+            width: 150,
+            render: (text) => (
+                <span className={`rounded-md px-2 py-1 text-xs font-medium capitalize ${statusColors[text]}`}>
+                    {text.toUpperCase()}
+                </span>
+            ),
+        },
+        {
+            title: 'Return Date',
+            dataIndex: 'return_at',
+            key: 'return_at',
+            width: 150,
+            render: (text) => formatDate(text) || 'N/A',
+        },
+        {
+            title: 'Extended Date',
+            dataIndex: 'extended_at',
+            key: 'extended_at',
+            width: 150,
+            render: (text) => formatDate(text) || 'N/A',
+        },
+        {
             title: 'Condition',
             dataIndex: 'returned_condition',
             key: 'returned_condition',
@@ -198,12 +233,13 @@ const LoanBatchDetail = () => {
             title: 'Note',
             dataIndex: 'note',
             key: 'note',
+            width: 200,
             render: (text) => text || 'N/A',
         },
         {
             title: 'Fee',
             key: 'fee',
-            width: 200,
+            width: 150,
             render: (_, record) => {
                 const copyFee = feeData[record.copy_id];
                 if (copyFee) {
@@ -291,13 +327,32 @@ const LoanBatchDetail = () => {
                 Details
             </Divider>
 
-            <Table dataSource={batchDetail.loan_details} columns={columns} rowKey="id" pagination={false} bordered />
+            <Table
+                scroll={{ x: 1200 }}
+                dataSource={batchDetail.loan_details}
+                columns={columns}
+                rowKey="id"
+                pagination={false}
+                bordered
+            />
+
+            {/* Modal for returning all items in batch */}
             {batchDetail && (
                 <ReturnConfirmationModal
                     visible={returnModalVisible}
                     onClose={handleReturnModalClose}
                     batchId={batchDetail.id}
                     loanDetails={batchDetail.loan_details}
+                />
+            )}
+
+            {/* Modal for returning single item */}
+            {selectedDetail && (
+                <SingleReturnModal
+                    visible={singleReturnModalVisible}
+                    onClose={handleSingleReturnModalClose}
+                    batchId={batchDetail.id}
+                    loanDetail={selectedDetail}
                 />
             )}
 

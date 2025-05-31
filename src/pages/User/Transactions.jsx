@@ -114,7 +114,7 @@ const Transactions = () => {
                 />
             </div>
             <div className="flex items-center justify-between">
-                <h1 className="my-[24px] text-[20px] font-bold text-[#1B326D]">Borrow History</h1>
+                <h1 className="my-[24px] text-[20px] font-bold text-[#1B326D]">Transactions</h1>
             </div>
             {loading ? (
                 <Loading />

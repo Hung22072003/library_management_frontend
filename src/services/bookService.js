@@ -15,28 +15,20 @@ const getBooksByCategory = (categoryId, page, size, search) => {
 const createBook = (values, thumbnail) => {
     const formData = new FormData();
     formData.append('title', values.title);
-    formData.append('description', values.description);
-    formData.append('publication_year', values.publication_year);
-    formData.append('isbn', values.isbn);
-    formData.append('available_copies', values.total_copies);
-    formData.append('total_copies', values.total_copies);
+    if (values.description) formData.append('description', values.description);
+    if (values.publication_year) formData.append('publication_year', values.publication_year);
+    if (values.isbn13) formData.append('isbn13', values.isbn13);
+    if (values.isbn10) formData.append('isbn10', values.isbn10);
+    if (values.authors) formData.append('authors', values.authors);
+    if (values.language) formData.append('language', values.language);
+    if (values.num_pages) formData.append('num_pages', values.num_pages);
+    if (values.total_copies) formData.append('total_copies', values.total_copies);
+    if (thumbnail) formData.append('thumbnail', thumbnail);
 
-    // Thêm categories[] (mảng)
     if (values.categories) {
         values.categories.forEach((category) => {
             formData.append('categories[]', category);
         });
-    }
-
-    // Thêm authors[] (mảng)
-    if (values.authors) {
-        values.authors.forEach((author) => {
-            formData.append('authors[]', author);
-        });
-    }
-
-    if (thumbnail) {
-        formData.append('thumbnail', thumbnail);
     }
 
     return axios.post('api/books', formData, {
@@ -46,19 +38,21 @@ const createBook = (values, thumbnail) => {
     });
 };
 
-const updateBook = async (id, values, thumbnail) => {
+const updateBook = async (id, values, thumbnail, oldThumbnail) => {
     const formData = new FormData();
     formData.append('title', values.title);
-    formData.append('description', values.description);
-    formData.append('publication_year', values.publication_year);
-    formData.append('isbn', values.isbn);
-    formData.append('rental_fee', values.rental_fee);
-    formData.append('total_copies', values.total_copies);
-    formData.append('categories[]', values.categories); // Mảng categories
-    formData.append('authors[]', values.authors); // Mảng authors
-    if (thumbnail) {
-        formData.append('thumbnail', thumbnail); // Thêm file ảnh nếu có
-    }
+    if (values.description) formData.append('description', values.description);
+    if (values.publication_year) formData.append('publication_year', values.publication_year);
+    if (values.isbn13) formData.append('isbn13', values.isbn13);
+    if (values.isbn10) formData.append('isbn10', values.isbn10);
+    if (values.authors) formData.append('authors', values.authors);
+    if (values.language) formData.append('language', values.language);
+    if (values.num_pages) formData.append('num_pages', values.num_pages);
+    if (oldThumbnail) formData.append('thumbnail', oldThumbnail);
+    if (thumbnail) formData.append('file', thumbnail);
+
+    formData.append('categories[]', values.categories);
+
     return await axios.post(`/api/books/${id}?_method=PUT`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data',

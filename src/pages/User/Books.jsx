@@ -1,16 +1,12 @@
 import { Input, message, Modal, Pagination, Select } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getAllBookCopiesOfOneBook, getAllBooks, getBookById, getBooksByCategory } from '../../services/bookService';
 import { getAllCategories } from '../../services/categoryService';
-import { faSearch, faArrowDown } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { formatCurrency } from '../../utils/FormatCurrency';
 import { debounce } from 'lodash';
 import Loading from '../../components/Loading';
 import { createCart } from '../../services/cartService';
 import useCart from '../../hooks/useCart';
-import { formatDate } from '../../utils/FormatDateTime';
-
+import defaultBook from '../../assets/default-book.png'; // Assuming you have a default image for books
 const Books = () => {
     const { fetchCarts } = useCart();
     const [books, setBooks] = useState([]);
@@ -26,8 +22,7 @@ const Books = () => {
     const [selectedCopy, setSelectedCopy] = useState(null);
     const [isCopiesModalOpen, setIsCopiesModalOpen] = useState(false);
     const [currentBookId, setCurrentBookId] = useState(null);
-    const [currentRentalFee, setCurrentRentalFee] = useState(null);
-    const size = 6;
+    const size = 12;
 
     const handleSelectCategory = (value) => {
         setSelectedCategory(value);
@@ -45,8 +40,6 @@ const Books = () => {
         try {
             const response = await getAllBookCopiesOfOneBook(bookId);
             const result = response.data.data;
-
-            // Filter only available copies
             const availableCopies = result.filter((copy) => copy.status === 'available');
             setBookCopies(availableCopies);
             setIsCopiesModalOpen(true);
@@ -100,7 +93,6 @@ const Books = () => {
 
     const fetchBookById = async (id) => {
         const response = await getBookById(id);
-        console.log(response);
         if (response.status === 200) {
             setSelectedBook(response.data.data);
             showModal();
@@ -150,7 +142,7 @@ const Books = () => {
                 <div className="relative">
                     <Select
                         defaultValue={selectedCategory}
-                        showSearch // Bật tính năng tìm kiếm
+                        showSearch
                         filterOption={filterOption}
                         onChange={handleSelectCategory}
                         style={{
@@ -158,7 +150,6 @@ const Books = () => {
                             color: '#1B326D',
                             height: '42px',
                         }}
-                        dropdownStyle={{ maxHeight: '100px' }}
                     >
                         <Select.Option
                             style={{
@@ -192,9 +183,11 @@ const Books = () => {
                             setSearchTerm(e.target.value);
                         }}
                         style={{ height: '42px', width: '250px', color: '#1B326D', outline: 'none' }}
+                        placeholder="Search books..."
                     />
                 </div>
             </div>
+
             <div className="mt-[16px]">
                 <div className="mb-[16px] flex items-center justify-between">
                     <h1 className="text-[20px] leading-[24px] font-medium text-[#1B326D]">All books</h1>
@@ -216,43 +209,88 @@ const Books = () => {
                 {loading ? (
                     <Loading />
                 ) : (
-                    <div className="grid grid-cols-3 gap-[16px]">
+                    <div className="space-y-[16px]">
                         {books &&
                             books.map((book) => (
-                                <div key={book.id} className="flex items-center">
-                                    <img src={book.thumbnail} className="h-auto w-[40%]" />
+                                <div
+                                    key={book.id}
+                                    className="rounded-lg border border-gray-200 bg-white p-[16px] shadow-md transition-shadow duration-300 hover:shadow-lg"
+                                >
+                                    <div className="flex items-center gap-[20px]">
+                                        {/* Book Thumbnail */}
+                                        <div className="h-[160px] w-[120px] flex-shrink-0 overflow-hidden rounded-lg">
+                                            <img
+                                                src={book.thumbnail || defaultBook}
+                                                alt={book.title}
+                                                className="h-auto w-full object-cover"
+                                            />
+                                        </div>
 
-                                    <div className="ml-[24px] flex flex-1 flex-col gap-[12px] text-[14px]">
-                                        <p className="font-bold text-[#1B326D]">{book.title}</p>
-                                        <span className="text-[#9b9c9d]">
-                                            Total:{' '}
-                                            <span className="font-medium text-[#1B326D]">{book.total_copies}</span>
-                                        </span>
-                                        <span className="text-[#9b9c9d]">
-                                            Available:{' '}
-                                            <span className="font-medium text-[#1B326D]">{book.available_copies}</span>
-                                        </span>
-                                        <span className="text-[#9b9c9d]">
-                                            Genre:{' '}
-                                            <span className="font-medium text-[#1B326D]">
-                                                {book.categories && book.categories.map((a) => a.name).join(', ')}
-                                            </span>
-                                        </span>
+                                        {/* Book Information */}
+                                        <div className="flex-1 space-y-[12px]">
+                                            {/* Title */}
+                                            <h3 className="line-clamp-2 text-[16px] font-bold text-[#1B326D]">
+                                                {book.title}
+                                            </h3>
 
-                                        <button
-                                            className="max-w-[130px] cursor-pointer rounded-[8px] border-[1px] bg-[#1B326D] p-[8px] text-white"
-                                            onClick={() => showCopiesModal(book.id)}
-                                            disabled={book.available_copies <= 0}
-                                        >
-                                            Add to cart
-                                        </button>
+                                            {/* Authors */}
+                                            <p className="text-[14px] text-[#666]">
+                                                <span className="font-medium text-[#1B326D]">Authors:</span>{' '}
+                                                {book.authors}
+                                            </p>
 
-                                        <span
-                                            onClick={() => handleViewDetail(book.id)}
-                                            className="cursor-pointer font-medium text-[#1B326D] underline hover:font-bold"
-                                        >
-                                            View detail
-                                        </span>
+                                            {/* Categories */}
+                                            <p className="text-[14px] text-[#666]">
+                                                <span className="font-medium text-[#1B326D]">Genre:</span>
+                                                <span className="ml-[8px]">
+                                                    {book.categories?.map((category) => category.name).join(', ')}
+                                                </span>
+                                            </p>
+
+                                            {/* Availability Info */}
+                                            <div className="flex items-center gap-[24px] text-[14px]">
+                                                <span className="text-[#1B326D]">
+                                                    Total Copies:{' '}
+                                                    <span className="font-medium text-[#1B326D]">
+                                                        {book.total_copies}
+                                                    </span>
+                                                </span>
+                                                <span className="text-[#1B326D]">
+                                                    Available:{' '}
+                                                    <span
+                                                        className={`font-medium ${book.available_copies > 0 ? 'text-green-600' : 'text-red-600'}`}
+                                                    >
+                                                        {book.available_copies}
+                                                    </span>
+                                                </span>
+                                                <span className="text-[#1B326D]">
+                                                    Language:{' '}
+                                                    <span className="font-medium text-[#1B326D]">{book.language}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="flex min-w-[120px] flex-col gap-[8px]">
+                                            <button
+                                                className={`w-full cursor-pointer rounded-[6px] border-[1px] p-[10px] text-[14px] font-medium transition-colors duration-200 ${
+                                                    book.available_copies > 0
+                                                        ? 'bg-[#1B326D] text-white hover:bg-[#0f1f47]'
+                                                        : 'cursor-not-allowed bg-gray-300 text-gray-500'
+                                                }`}
+                                                onClick={() => showCopiesModal(book.id)}
+                                                disabled={book.available_copies <= 0}
+                                            >
+                                                {book.available_copies > 0 ? 'Add to cart' : 'Out of stock'}
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleViewDetail(book.id)}
+                                                className="w-full cursor-pointer rounded-[6px] border border-[#1B326D] px-[10px] py-[10px] text-[14px] font-medium text-[#1B326D] transition-colors duration-200 hover:bg-[#1B326D] hover:text-white"
+                                            >
+                                                View Details
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -273,7 +311,7 @@ const Books = () => {
                             {/* Thumbnail */}
                             <div className="w-1/3">
                                 <img
-                                    src={selectedBook.thumbnail}
+                                    src={selectedBook.thumbnail || defaultBook}
                                     alt={selectedBook.title}
                                     className="h-auto w-full rounded-lg object-cover"
                                 />
@@ -281,21 +319,28 @@ const Books = () => {
 
                             {/* selectedBook Details */}
                             <div className="w-2/3 pl-6">
-                                <h2 className="text-[24px] font-bold text-[#1B326D]">{selectedBook.title}</h2>
-                                <p className="text-[14px] text-[#1B326D]">
-                                    by {selectedBook.authors.map((a) => a.name).join(', ')}
+                                <h2 className="text-[16px] font-bold text-[#1B326D]">{selectedBook.title}</h2>
+                                <p className="mt-[12px] text-sm font-semibold text-[#9b9c9d]">
+                                    Authors:
+                                    <span className="ml-[4px] text-[#1B326D]">{selectedBook.authors}</span>
                                 </p>
 
-                                <p className="mt-[12px] font-semibold text-[#1B326D]">
-                                    Genre: {selectedBook.categories.map((c) => c.name).join(', ')}
+                                <p className="mt-[12px] text-sm font-semibold text-[#9b9c9d]">
+                                    Genre:
+                                    <span className="ml-[4px] text-[#1B326D]">
+                                        {selectedBook.categories?.map((c) => c.name).join(', ') || 'No Category'}
+                                    </span>
                                 </p>
+
                                 <p className="mt-[12px] text-sm font-semibold text-[#9b9c9d]">
                                     Publication year:
                                     <span className="ml-[4px] text-[#1B326D]">{selectedBook.publication_year}</span>
                                 </p>
                                 <p className="mt-[12px] text-sm font-semibold text-[#9b9c9d]">
                                     ISBN:
-                                    <span className="ml-[4px] text-[#1B326D]">{selectedBook.isbn}</span>
+                                    <span className="ml-[4px] text-[#1B326D]">
+                                        {selectedBook.isbn13 || selectedBook.isbn10}
+                                    </span>
                                 </p>
                                 <p className="mt-[12px] font-semibold text-[#9b9c9d]">
                                     Available Copies:
@@ -303,7 +348,15 @@ const Books = () => {
                                         {selectedBook.available_copies} / {selectedBook.total_copies}
                                     </span>
                                 </p>
+                                <p className="mt-[12px] text-sm font-semibold text-[#9b9c9d]">
+                                    Language:
+                                    <span className="ml-[4px] text-[#1B326D]">{selectedBook.language}</span>
+                                </p>
 
+                                <p className="mt-[12px] text-sm font-semibold text-[#9b9c9d]">
+                                    NumPages:
+                                    <span className="ml-[4px] text-[#1B326D]">{selectedBook.num_pages}</span>
+                                </p>
                                 <p className="mt-4 font-semibold text-[#9b9c9d]">Description:</p>
 
                                 <span className="mt-[4px] text-[#1B326D]">{selectedBook.description}</span>

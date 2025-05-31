@@ -4,7 +4,7 @@ import { Input, message, Pagination, Select } from 'antd';
 import { getAllBooks, getBooksByCategory } from '../../services/bookService';
 import Loading from '../../components/Loading';
 import { getAllCategories } from '../../services/categoryService';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import { getBatchesOfUser } from '../../services/loanService';
 import { formatDate } from '../../utils/FormatDateTime';
@@ -17,6 +17,7 @@ const statusColors = {
     cancel: 'bg-rose-200 text-rose-800',
 };
 const BorrowHistory = () => {
+    const navigate = useNavigate();
     const [batches, setBatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
@@ -66,27 +67,25 @@ const BorrowHistory = () => {
                         <table className="min-w-full overflow-hidden rounded-lg bg-white shadow-lg">
                             <thead className="bg-gray-100 text-[16px] text-[#1B326D]">
                                 <tr>
-                                    <th className="min-w-[30px] px-4 py-3 text-left">ID</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Status</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Borrow Date</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Due Date</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Return Date</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Expired Borrow Date</th>
+                                    <th className="min-w-[200px] px-4 py-3 text-left">ID</th>
+                                    <th className="min-w-[120px] px-4 py-3 text-left">Status</th>
+                                    <th className="min-w-[160px] px-4 py-3 text-left">Borrow Date</th>
+                                    <th className="min-w-[160px] px-4 py-3 text-left">Due Date</th>
+                                    <th className="min-w-[160px] px-4 py-3 text-left">Return Date</th>
+                                    <th className="min-w-[200px] px-4 py-3 text-left">Expired Borrow Date</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Extend Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                                 {batches.map((batch) => (
-                                    <tr key={batch.id} className="text-[14px] text-[#1B326D] hover:bg-gray-50">
-                                        <td className="px-4 py-3">
-                                            <Link
-                                                to={`/borrowHistory/${batch.id}`}
-                                                className="max-w-xs truncate hover:font-bold"
-                                                title={batch.id}
-                                            >
-                                                {batch.id}
-                                            </Link>
-                                        </td>
+                                    <tr
+                                        onClick={() => {
+                                            navigate(`/borrowHistory/${batch.id}`);
+                                        }}
+                                        key={batch.id}
+                                        className="cursor-pointer text-[14px] text-[#1B326D] hover:bg-gray-100"
+                                    >
+                                        <td className="px-4 py-3">{batch.id}</td>
                                         <td className="px-4 py-3">
                                             <span
                                                 className={`rounded-md px-2 py-1 text-xs font-medium capitalize ${statusColors[batch.status]}`}

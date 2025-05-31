@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { message } from 'antd';
 import { deleteCart, getCartsOfUser } from '../services/cartService';
 import { createLoanBatch } from '../services/loanService';
+import dayjs from 'dayjs';
 const CartContext = createContext();
 export const CartProvider = ({ children }) => {
     const [carts, setCarts] = useState([]);
@@ -40,6 +41,10 @@ export const CartProvider = ({ children }) => {
     };
 
     const openBorrowModal = () => {
+        setBorrowDates((prev) => ({
+            ...prev,
+            borrowDate: dayjs(new Date()),
+        }));
         setShowDateModal(true);
     };
 
@@ -51,8 +56,10 @@ export const CartProvider = ({ children }) => {
         try {
             setLoading(true);
             const { borrowDate, dueDate } = borrowDates;
-
-            console.log(borrowDates);
+            if (borrowDate >= dueDate) {
+                message.error('Borrow date must be before due date');
+                return;
+            }
             await createLoanBatch(borrowDate?.format('YYYY-MM-DD'), dueDate?.format('YYYY-MM-DD'));
 
             message.success('Books borrowed successfully!');

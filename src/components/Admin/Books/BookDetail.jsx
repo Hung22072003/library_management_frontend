@@ -8,15 +8,16 @@ import { getAllAuthors } from '../../../services/authorService';
 import { getBookById, updateBook, deleteBook, restoreBook } from '../../../services/bookService'; // Updated service functions
 import { useNavigate, useParams } from 'react-router-dom';
 import Loading from '../../Loading';
+import { set } from 'lodash';
 const { Option } = Select;
 
 const BookDetail = () => {
     const navigate = useNavigate();
     const { id } = useParams(); // Lấy id từ URL (e.g., /admin/books/12)
     const [form] = Form.useForm();
+    const [oldThumbnail, setOldThumbnail] = useState(null);
     const [thumbnail, setThumbnail] = useState(null); // Lưu file ảnh mới nếu có
     const [thumbnailPreview, setThumbnailPreview] = useState(null); // Lưu URL để hiển thị ảnh
-    const [authors, setAuthors] = useState([]); // Lưu danh sách authors từ API
     const [categories, setCategories] = useState([]); // Lưu danh sách categories từ API
     const [loading, setLoading] = useState(false); // Trạng thái loading
     const [bookData, setBookData] = useState(null); // Lưu dữ liệu sách từ API
@@ -26,7 +27,7 @@ const BookDetail = () => {
         setLoading(true);
         try {
             const response = await getBookById(id);
-            const book = response.data.data; // Giả sử API trả về { data: book }
+            const book = response.data.data;
             setBookData(book);
 
             // Điền dữ liệu vào form
@@ -34,13 +35,16 @@ const BookDetail = () => {
                 title: book.title,
                 description: book.description,
                 publication_year: book.publication_year,
-                isbn: book.isbn,
+                isbn13: book.isbn13,
+                isbn10: book.isbn10,
+                language: book.language,
+                num_pages: book.num_pages,
                 available_copies: book.available_copies,
                 total_copies: book.total_copies,
-                categories: book.categories.map((cat) => cat.id), // Giả sử categories là mảng đối tượng
-                authors: book.authors.map((author) => author.id), // Giả sử authors là mảng đối tượng
+                categories: book.categories.map((cat) => cat.id),
+                authors: book.authors,
             });
-
+            setOldThumbnail(book.thumbnail);
             // Đặt ảnh xem trước nếu có thumbnail
             if (book.thumbnail) {
                 setThumbnailPreview(book.thumbnail); // Giả sử thumbnail là URL
@@ -52,18 +56,6 @@ const BookDetail = () => {
             setLoading(false);
         }
     };
-
-    // Fetch authors and categories
-    const fetchAuthors = async () => {
-        try {
-            const response = await getAllAuthors();
-            setAuthors(response.data.data); // Giả sử API trả về mảng authors
-        } catch (error) {
-            message.error('Failed to fetch authors!');
-            console.error(error);
-        }
-    };
-
     const fetchCategories = async () => {
         try {
             const response = await getAllCategories();
@@ -76,7 +68,6 @@ const BookDetail = () => {
 
     // Gọi API khi component mount
     useEffect(() => {
-        fetchAuthors();
         fetchCategories();
         fetchBookDetails();
     }, [id]);
@@ -93,6 +84,7 @@ const BookDetail = () => {
 
     // Xử lý khi xóa ảnh
     const handleRemoveThumbnail = () => {
+        setOldThumbnail(null);
         setThumbnail(null);
         setThumbnailPreview(null);
         if (thumbnailPreview) {
@@ -103,16 +95,15 @@ const BookDetail = () => {
     // Xử lý khi gửi form để cập nhật
     const onFinish = async (values) => {
         setLoading(true);
-        console.log(values);
+        console.log(values, thumbnail);
         try {
-            const response = await updateBook(id, values, thumbnail);
-            console.log(response);
+            const response = await updateBook(id, values, thumbnail, oldThumbnail);
             message.success('Update book successfully!');
             fetchBookDetails();
         } catch (error) {
-            if (error.data.errors.isbn) {
+            if (error?.data?.errors?.isbn) {
                 message.error('ISBN already exists! Please try again!');
-            } else if (error.data.errors.thumbnail) {
+            } else if (error?.data?.errors?.thumbnail) {
                 message.error('The thumbnail field must be a file of type: jpeg, png, jpg, gif.');
             } else {
                 message.error('Update book failed! Please try again!');
@@ -153,67 +144,49 @@ const BookDetail = () => {
         <div className="">
             <h2 className="mb-[24px] text-center text-[24px] font-bold text-[#1B326D]">Book Details</h2>
             <Form form={form} layout="vertical" onFinish={onFinish} style={{ color: '#000' }}>
-                <div className="grid grid-cols-6 gap-[24px]">
-                    <Form.Item
-                        style={{ width: '200px' }}
-                        label="Title"
-                        name="title"
-                        rules={[{ required: true, message: 'Title is required' }]}
-                    >
-                        <Input placeholder="Enter title ..." style={{ width: '200px' }} />
-                    </Form.Item>
+                <Form.Item label="Title" name="title" rules={[{ required: true, message: 'Title is required' }]}>
+                    <Input placeholder="Enter title ..." />
+                </Form.Item>
 
-                    <Form.Item
-                        style={{ width: '200px' }}
-                        label="ISBN"
-                        name="isbn"
-                        rules={[{ required: true, message: 'ISBN is required' }]}
-                    >
-                        <Input placeholder="Enter ISBN" />
+                <div className="grid grid-cols-5 gap-[24px]">
+                    <Form.Item label="ISBN13" name="isbn13">
+                        <Input placeholder="Enter ISBN13" />
                     </Form.Item>
-                    <Form.Item
-                        label="Publication Year"
-                        name="publication_year"
-                        rules={[{ required: true, message: 'Publication year is required' }]}
-                    >
+                    <Form.Item label="ISBN10" name="isbn10">
+                        <Input placeholder="Enter ISBN10" />
+                    </Form.Item>
+                    <Form.Item label="Publication Year" name="publication_year">
                         <InputNumber
                             controls={false}
                             max={new Date().getFullYear()}
                             placeholder="Enter publication year"
-                            style={{ width: '150px' }}
+                            style={{
+                                width: '200px',
+                            }}
                         />
                     </Form.Item>
 
-                    {/* <Form.Item
-                        label="Rental Fee"
-                        name="rental_fee"
-                        rules={[{ required: true, message: 'Rental Fee is required' }]}
-                    >
+                    <Form.Item label="Total Copies" name="total_copies">
                         <InputNumber
-                            min={0}
-                            style={{ width: '150px' }}
+                            disabled
+                            min={1}
                             controls={false}
-                            placeholder="Enter rental fee"
+                            placeholder="Enter total copies"
+                            className="w-full"
                         />
-                    </Form.Item> */}
-
-                    <Form.Item
-                        label="Available Copies"
-                        name="available_copies"
-                        rules={[{ required: true, message: 'Available Copies is required' }]}
-                    >
-                        <InputNumber disabled={true} min={0} controls={false} placeholder="Enter available copies" />
                     </Form.Item>
-
-                    <Form.Item
-                        label="Total Copies"
-                        name="total_copies"
-                        rules={[{ required: true, message: 'Total Copies is required' }]}
-                    >
-                        <InputNumber min={1} controls={false} placeholder="Enter total copies" />
+                    <Form.Item label="Available Copies" name="available_copies">
+                        <InputNumber
+                            disabled
+                            min={1}
+                            controls={false}
+                            placeholder="Enter Available Copies"
+                            className="w-full"
+                        />
                     </Form.Item>
                 </div>
-                <div className="grid grid-cols-2 gap-[24px]">
+
+                <div className="grid grid-cols-[30%_30%_15%_15%] gap-[24px]">
                     <Form.Item
                         label="Categories"
                         name="categories"
@@ -225,12 +198,11 @@ const BookDetail = () => {
                             allowClear
                             showSearch
                             filterOption={filterOption}
-                            dropdownStyle={{ maxHeight: '100px' }}
                         >
                             {categories.map((category) => (
-                                <Option key={category.id} value={category.id}>
+                                <Select.Option key={category.id} value={category.id}>
                                     {category.name}
-                                </Option>
+                                </Select.Option>
                             ))}
                         </Select>
                     </Form.Item>
@@ -238,32 +210,22 @@ const BookDetail = () => {
                     <Form.Item
                         label="Authors"
                         name="authors"
-                        rules={[{ required: true, message: 'Select at least one author' }]}
+                        rules={[{ required: true, message: 'Authors is required' }]}
                     >
-                        <Select
-                            mode="multiple"
-                            placeholder="Select at least one author"
-                            allowClear
-                            showSearch
-                            filterOption={filterOption}
-                            dropdownStyle={{ maxHeight: '100px' }}
-                        >
-                            {authors.map((author) => (
-                                <Option key={author.id} value={author.id}>
-                                    {author.name}
-                                </Option>
-                            ))}
-                        </Select>
+                        <Input placeholder="Enter Authors (Using ', ' to seperate multiple authors)" />
+                    </Form.Item>
+
+                    <Form.Item label="Number of pages" name="num_pages">
+                        <InputNumber min={1} controls={false} placeholder="Enter number of pages" className="w-full" />
+                    </Form.Item>
+
+                    <Form.Item label="Language" name="language">
+                        <Input placeholder="Enter Language" />
                     </Form.Item>
                 </div>
-                <Form.Item
-                    label="Description"
-                    name="description"
-                    rules={[{ required: true, message: 'Description is required' }]}
-                >
+                <Form.Item label="Description" name="description">
                     <Input.TextArea rows={8} placeholder="Enter description" />
                 </Form.Item>
-
                 <Form.Item label="Thumbnail">
                     <Upload
                         beforeUpload={() => false} // Ngăn upload tự động

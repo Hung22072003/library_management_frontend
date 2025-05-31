@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { formatCurrency } from '../../../utils/FormatCurrency';
 import { Input, Pagination, Select } from 'antd';
 import { getAllBooks, getBooksByCategory } from '../../../services/bookService';
 import Loading from '../../Loading';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { getAllCategories } from '../../../services/categoryService';
 import { Link } from 'react-router-dom';
 import { debounce } from 'lodash';
+import defaultBook from '../../../assets/default-book.png';
 
 const BooksList = () => {
     const [books, setBooks] = useState([]);
@@ -18,7 +16,7 @@ const BooksList = () => {
     const [totalBooks, setTotalBooks] = useState();
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
-    const size = 6;
+    const size = 9;
 
     const handleSelectCategory = (value) => {
         setSelectedCategory(value);
@@ -37,7 +35,6 @@ const BooksList = () => {
     const fetchBooks = async (query = '') => {
         setLoading(true);
         let response;
-        console.log(selectedCategory);
         if (selectedCategory === 'all') {
             response = await getAllBooks(currentPage, size, query);
         } else {
@@ -83,7 +80,7 @@ const BooksList = () => {
                 <div className="relative">
                     <Select
                         defaultValue={selectedCategory}
-                        showSearch // Bật tính năng tìm kiếm
+                        showSearch
                         filterOption={filterOption}
                         onChange={handleSelectCategory}
                         style={{
@@ -91,7 +88,6 @@ const BooksList = () => {
                             color: '#1B326D',
                             height: '42px',
                         }}
-                        dropdownStyle={{ maxHeight: '100px' }}
                     >
                         <Select.Option
                             style={{
@@ -146,14 +142,17 @@ const BooksList = () => {
                             <thead className="bg-gray-100 text-[16px] text-[#1B326D]">
                                 <tr>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Thumbnail</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">ISBN</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Title</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Author</th>
+                                    <th className="min-w-[180px] px-4 py-3 text-left">ISBN13</th>
+                                    <th className="min-w-[180px] px-4 py-3 text-left">ISBN10</th>
+                                    <th className="min-w-[300px] px-4 py-3 text-left">Title</th>
+                                    <th className="min-w-[180px] px-4 py-3 text-left">Authors</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Genre</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Publication Year</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Available Copies</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Total Copies</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Status</th>
+                                    <th className="min-w-[180px] px-4 py-3 text-left">Num_Pages</th>
+                                    <th className="min-w-[180px] px-4 py-3 text-left">Language</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left"></th>
                                 </tr>
                             </thead>
@@ -162,31 +161,30 @@ const BooksList = () => {
                                     <tr key={book.id} className="text-[14px] text-[#1B326D] hover:bg-gray-50">
                                         <td className="px-4 py-3">
                                             <img
-                                                src={book.thumbnail || '/placeholder-book.jpg'}
+                                                src={book.thumbnail || defaultBook}
                                                 alt={book.title}
                                                 className="h-auto w-16 rounded object-cover"
                                             />
                                         </td>
-                                        <td className="px-4 py-3">{book.isbn}</td>
+                                        <td className="px-4 py-3">{book.isbn13}</td>
+                                        <td className="px-4 py-3">{book.isbn10}</td>
                                         <td className="px-4 py-3 font-semibold">
                                             <Link
                                                 to={`/admin/books/${book.id}`}
-                                                className="max-w-xs truncate hover:font-bold"
+                                                className="hover:font-bold"
                                                 title={book.title}
                                             >
                                                 {book.title}
                                             </Link>
                                         </td>
-                                        <td className="px-4 py-3">
-                                            {book.authors && book.authors.map((a) => a.name).join(', ')}
-                                        </td>
+                                        <td className="px-4 py-3">{book.authors}</td>
                                         <td className="px-4 py-3">
                                             {book.categories && book.categories.map((a) => a.name).join(', ')}
                                         </td>
                                         <td className="px-4 py-3">{book.publication_year}</td>
 
-                                        <td className="px-4 py-3 text-center">{book.available_copies}</td>
-                                        <td className="px-4 py-3 text-center">{book.total_copies}</td>
+                                        <td className="px-4 py-3">{book.available_copies}</td>
+                                        <td className="px-4 py-3">{book.total_copies}</td>
                                         <td className="px-4 py-3">
                                             <span
                                                 className={
@@ -198,6 +196,8 @@ const BooksList = () => {
                                                 {!book.deleted_at ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
+                                        <td className="px-4 py-3">{book.num_pages}</td>
+                                        <td className="px-4 py-3">{book.language}</td>
                                         <td className="px-4 py-3 text-center">
                                             <a href={`/admin/books/${book.id}/copies`} className="hover:font-bold">
                                                 Book Copies

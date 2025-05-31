@@ -15,15 +15,16 @@ import {
     InputNumber,
 } from 'antd';
 import dayjs from 'dayjs';
-import { CloseCircleOutlined, ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseCircleOutlined, ArrowLeftOutlined, PlusOutlined, CheckOutlined } from '@ant-design/icons';
 import { Link, useParams } from 'react-router-dom';
 import useBatchDetail from '../../hooks/useBatchDetail';
 import Loading from '../../components/Loading';
 import { formatDate } from '../../utils/FormatDateTime';
 import { formatCurrency } from '../../utils/FormatCurrency';
 import ReturnConfirmationModal from '../../components/ReturnConfirmationModal';
-import { extendBatch } from '../../services/loanService';
+import { extendBatch, returnBatch } from '../../services/loanService';
 import { createTransaction, getTransactionsOfLoanBatch } from '../../services/transactionService';
+import SingleReturnModal from '../../components/SingleReturnModal';
 
 // Status tag colors mapping
 const statusColors = {
@@ -37,8 +38,15 @@ const statusColors = {
 
 const LoanBatchDetail = () => {
     const { id } = useParams();
-    const { batchDetail, loading, loadBatchDetail, transactions, handleCancelBatch, handleConfirmBorrowed } =
-        useBatchDetail();
+    const {
+        batchDetail,
+        loading,
+        setLoading,
+        loadBatchDetail,
+        transactions,
+        handleCancelBatch,
+        handleConfirmBorrowed,
+    } = useBatchDetail();
     const [returnModalVisible, setReturnModalVisible] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
@@ -48,7 +56,22 @@ const LoanBatchDetail = () => {
     const [currentCondition, setCurrentCondition] = useState(null);
     const [feeAmount, setFeeAmount] = useState(0);
     const [feeNote, setFeeNote] = useState('');
+    const [singleReturnModalVisible, setSingleReturnModalVisible] = useState(false);
+    const [selectedDetail, setSelectedDetail] = useState(null);
+    const [loanDetails, setLoanDetails] = useState([]);
 
+    const handleSingleReturn = (detail) => {
+        setSelectedDetail(detail);
+        setSingleReturnModalVisible(true);
+    };
+
+    const handleSingleReturnModalClose = (shouldRefresh) => {
+        setSingleReturnModalVisible(false);
+        setSelectedDetail(null);
+        if (shouldRefresh) {
+            loadBatchDetail(id);
+        }
+    };
     useEffect(() => {
         loadBatchDetail(id);
     }, [id]);
@@ -67,8 +90,28 @@ const LoanBatchDetail = () => {
         }, 0);
     }, [transactions]);
 
-    const handleConfirmReturned = () => {
-        setReturnModalVisible(true);
+    const handleConfirmReturned = async () => {
+        const borrowedDetails = batchDetail.loan_details.filter(
+            (detail) => detail.borrowed_status === 'borrowed' || detail.borrowed_status === 'overdue',
+        );
+
+        console.log('Borrowed details:', borrowedDetails);
+        if (borrowedDetails.length === 0) {
+            setLoading(true);
+            try {
+                await returnBatch({ loan_batch_id: batchDetail.id });
+                message.success('Batch returned successfully');
+                loadBatchDetail(batchDetail.id);
+            } catch (error) {
+                console.error('Error returning batch:', error);
+                message.error('Failed to return batch');
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            setLoanDetails(borrowedDetails);
+            setReturnModalVisible(true);
+        }
     };
 
     const handleReturnModalClose = (shouldRefresh) => {
@@ -152,12 +195,12 @@ const LoanBatchDetail = () => {
     const canExtend = batchDetail && !batchDetail.extended_at && ['borrowed'].includes(batchDetail.status);
 
     const columns = [
-        {
-            title: 'ID',
-            dataIndex: 'id',
-            key: 'id',
-            width: 200,
-        },
+        // {
+        //     title: 'ID',
+        //     dataIndex: 'id',
+        //     key: 'id',
+        //     width: 200,
+        // },
         {
             title: 'Book',
             key: 'book',
@@ -167,7 +210,7 @@ const LoanBatchDetail = () => {
                 return (
                     <div>
                         <div className="font-medium">{book ? book.title : `Book #${record.book_id}`}</div>
-                        {book && <div className="text-xs text-gray-500">ISBN: {book.isbn || 'N/A'}</div>}
+                        {book && <div className="text-xs text-gray-500">ISBN: {book.isbn13 || book.isbn10}</div>}
                     </div>
                 );
             },
@@ -189,6 +232,31 @@ const LoanBatchDetail = () => {
             ),
         },
         {
+            title: 'Status',
+            dataIndex: 'borrowed_status',
+            key: 'borrowed_status',
+            width: 200,
+            render: (text) => (
+                <span className={`rounded-md px-2 py-1 text-xs font-medium capitalize ${statusColors[text]}`}>
+                    {text.toUpperCase()}
+                </span>
+            ),
+        },
+        {
+            title: 'Return Date',
+            dataIndex: 'return_at',
+            key: 'return_at',
+            width: 150,
+            render: (text) => formatDate(text) || 'N/A',
+        },
+        {
+            title: 'Extended Date',
+            dataIndex: 'extended_at',
+            key: 'extended_at',
+            width: 150,
+            render: (text) => formatDate(text) || 'N/A',
+        },
+        {
             title: 'Condition',
             dataIndex: 'returned_condition',
             key: 'returned_condition',
@@ -199,6 +267,7 @@ const LoanBatchDetail = () => {
             title: 'Note',
             dataIndex: 'note',
             key: 'note',
+            width: 200,
             render: (text) => text || 'N/A',
         },
         {
@@ -227,6 +296,27 @@ const LoanBatchDetail = () => {
                 );
             },
         },
+        {
+            title: 'Action',
+            key: 'action',
+            width: 150,
+            render: (_, record) => {
+                if (record.borrowed_status === 'borrowed' || record.borrowed_status === 'overdue') {
+                    return (
+                        <Button
+                            type="primary"
+                            size="small"
+                            icon={<CheckOutlined />}
+                            onClick={() => handleSingleReturn(record)}
+                            style={{ backgroundColor: '#1B326D' }}
+                        >
+                            Return
+                        </Button>
+                    );
+                }
+                return null;
+            },
+        },
     ];
 
     if (loading) {
@@ -240,9 +330,6 @@ const LoanBatchDetail = () => {
             </Card>
         );
     }
-
-    // Calculate total rental fee
-    const totalRentalFee = batchDetail.loan_details.reduce((sum, item) => sum + parseInt(item.rental_fee || 0, 10), 0);
 
     return (
         <Card className="rounded-lg shadow">
@@ -322,7 +409,17 @@ const LoanBatchDetail = () => {
                     visible={returnModalVisible}
                     onClose={handleReturnModalClose}
                     batchId={batchDetail.id}
-                    loanDetails={batchDetail.loan_details}
+                    loanDetails={loanDetails}
+                />
+            )}
+
+            {/* Modal for returning single item */}
+            {selectedDetail && (
+                <SingleReturnModal
+                    visible={singleReturnModalVisible}
+                    onClose={handleSingleReturnModalClose}
+                    batchId={batchDetail.id}
+                    loanDetail={selectedDetail}
                 />
             )}
 
@@ -337,6 +434,7 @@ const LoanBatchDetail = () => {
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium">Select new due date (max +5 days from original):</label>
                     <DatePicker
+                        defaultValue={dayjs(batchDetail.due_at).add(1, 'day')}
                         className="w-full"
                         disabledDate={(current) => {
                             const dueDate = dayjs(batchDetail.due_at);

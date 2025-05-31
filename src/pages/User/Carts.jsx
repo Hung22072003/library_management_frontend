@@ -48,7 +48,7 @@ const Carts = () => {
 
                                 <div className="flex-1 pl-4">
                                     <div className="flex justify-between">
-                                        <h3 className="text-lg font-medium text-[#1B326D]">{book.title}</h3>
+                                        <h3 className="text-[16px] font-medium text-[#1B326D]">{book.title}</h3>
                                         <Button
                                             type="text"
                                             icon={<CloseOutlined />}
@@ -57,9 +57,7 @@ const Carts = () => {
                                         />
                                     </div>
 
-                                    <p className="text-[14px] font-medium text-[#1B326D]">
-                                        Author: {book.authors.map((a) => a.name).join(', ')}
-                                    </p>
+                                    <p className="text-[14px] font-medium text-[#1B326D]">Author: {book.authors}</p>
 
                                     <div className="mt-2 text-[14px]">
                                         <span className="font-medium text-[#1B326D]">Genre:</span>{' '}

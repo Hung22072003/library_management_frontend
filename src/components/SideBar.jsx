@@ -40,7 +40,7 @@ const SideBar = () => {
             icon: <FontAwesomeIcon icon={faBell} />,
         },
         {
-            label: 'Chat',
+            label: 'Chatbot',
             path: '/chat',
             icon: <FontAwesomeIcon icon={faMessage} />,
         },

@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, DatePicker, Form, Button, Alert, ConfigProvider } from 'antd';
 import useCart from '../hooks/useCart';
 import { createStyles } from 'antd-style';
+import dayjs from 'dayjs';
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     primaryButton: css`
@@ -35,6 +36,7 @@ const BorrowDateModal = () => {
     const [form] = Form.useForm();
 
     const handleOk = () => {
+        console.log(borrowDates);
         form.validateFields()
             .then(() => {
                 handleBorrow();
@@ -99,12 +101,9 @@ const BorrowDateModal = () => {
                     className="mb-4"
                 />
 
-                <Form.Item
-                    name="borrowDate"
-                    label="Borrow Date"
-                    rules={[{ required: true, message: 'Please select a borrow date!' }]}
-                >
+                <Form.Item name="borrowDate" label="Borrow Date">
                     <DatePicker
+                        defaultValue={borrowDates.borrowDate}
                         className="w-full"
                         disabledDate={disablePastDates}
                         value={borrowDates.borrowDate}
@@ -113,18 +112,13 @@ const BorrowDateModal = () => {
                     />
                 </Form.Item>
 
-                <Form.Item
-                    name="dueDate"
-                    label="Due Date"
-                    rules={[{ required: true, message: 'Please select a due date!' }]}
-                >
+                <Form.Item name="dueDate" label="Due Date">
                     <DatePicker
                         className="w-full"
                         disabledDate={disableBeforeBorrowDate}
                         value={borrowDates.dueDate}
                         onChange={(date) => updateBorrowDates('dueDate', date)}
                         placeholder="Select return date"
-                        disabled={!borrowDates.borrowDate}
                     />
                 </Form.Item>
             </Form>

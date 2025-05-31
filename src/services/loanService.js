@@ -28,4 +28,17 @@ const returnBatch = (data) => {
     return axios.post('/api/loans/return', data);
 };
 
-export { createLoanBatch, getBatchesOfUser, getBatchById, updateStatusBatch, getAllBatches, returnBatch, extendBatch };
+const returnOneBook = (data) => {
+    return axios.post('/api/loans/detail/return', data);
+};
+
+export {
+    createLoanBatch,
+    getBatchesOfUser,
+    getBatchById,
+    updateStatusBatch,
+    getAllBatches,
+    returnBatch,
+    extendBatch,
+    returnOneBook,
+};
