@@ -60,8 +60,8 @@ const BorrowDateModal = () => {
         // Clone the borrow date to avoid mutation
         const borrowDate = borrowDates.borrowDate.clone();
 
-        // Calculate max allowed date (borrow date + 14 days)
-        const maxAllowedDate = borrowDate.clone().add(14, 'days');
+        // Calculate max allowed date (borrow date + 30 days)
+        const maxAllowedDate = borrowDate.clone().add(30, 'days');
 
         // Disable if current date is before borrow date or after max allowed date
         return current < borrowDate.startOf('day') || current > maxAllowedDate.endOf('day');

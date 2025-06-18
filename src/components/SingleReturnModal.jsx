@@ -55,7 +55,7 @@ const SingleReturnModal = ({ visible, onClose, batchId, loanDetail }) => {
                             </Col>
                             <Col span={12}>
                                 <Text strong>ISBN: </Text>
-                                <Text>{loanDetail.book?.isbn || 'N/A'}</Text>
+                                <Text>{loanDetail.book?.isbn13 || loanDetail.book?.isbn10}</Text>
                             </Col>
                             <Col span={12}>
                                 <Text strong>Current Status: </Text>

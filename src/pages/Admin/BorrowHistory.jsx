@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { formatCurrency } from '../../utils/FormatCurrency';
 import { Input, message, Pagination, Select } from 'antd';
 import Loading from '../../components/Loading';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import { getAllBatches } from '../../services/loanService';
 import { formatDate } from '../../utils/FormatDateTime';
@@ -21,6 +21,7 @@ const BorrowHistory = () => {
     const [totalBatches, setTotalBatches] = useState();
     const [searchTerm, setSearchTerm] = useState('');
     const size = 8;
+    const navigate = useNavigate();
 
     useEffect(() => {
         debouncedFetchBatches(searchTerm);
@@ -88,15 +89,17 @@ const BorrowHistory = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                                 {batches.map((batch) => (
-                                    <tr key={batch.id} className="text-[14px] text-[#1B326D] hover:bg-gray-50">
+                                    <tr
+                                        onClick={() => {
+                                            navigate(`/admin/borrowHistory/${batch.id}`);
+                                        }}
+                                        key={batch.id}
+                                        className="text-[14px] text-[#1B326D] hover:cursor-pointer hover:bg-gray-100"
+                                    >
                                         <td className="px-4 py-3">
-                                            <Link
-                                                to={`/admin/borrowHistory/${batch.id}`}
-                                                className="max-w-xs truncate hover:font-bold"
-                                                title={batch.id}
-                                            >
+                                            <span className="max-w-xs truncate" title={batch.id}>
                                                 {batch.id}
-                                            </Link>
+                                            </span>
                                         </td>
                                         <td className="px-4 py-3">
                                             <span

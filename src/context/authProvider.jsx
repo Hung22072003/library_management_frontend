@@ -49,6 +49,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         localStorage.removeItem('access_token');
         setUser(null);
+        window.location.href = '/login';
     };
     useEffect(() => {
         fetchUser();

@@ -24,6 +24,12 @@ import ConfirmTransaction from './pages/ConfirmTransaction';
 import Transactions from './pages/User/Transactions';
 import Notifications from './pages/User/Notifications';
 import Chat from './pages/User/Chat';
+import RequestOtp from './pages/RequestOtp';
+import ResetPassword from './pages/ResetPassword';
+import VerifyOtp from './pages/VerifyOtp';
+import Profile from './pages/User/Profile';
+import AdminProfile from './pages/Admin/Profile';
+import AdminNotifications from './pages/Admin/Notifications';
 const roles = {
     user: 'USER',
     admin: 'ADMIN',
@@ -36,6 +42,9 @@ function App() {
                     <Route element={<AuthRoutes />}>
                         <Route path="/login" element={<Login />}></Route>
                         <Route path="/register" element={<Register />}></Route>
+                        <Route path="/forgot-password/request-otp" element={<RequestOtp />}></Route>
+                        <Route path="/forgot-password/verify-otp" element={<VerifyOtp />}></Route>
+                        <Route path="/forgot-password/reset" element={<ResetPassword />}></Route>
                     </Route>
 
                     <Route element={<PrivateRoutes allowedRoles={[roles.user, roles.admin]} />}>
@@ -47,6 +56,7 @@ function App() {
                             <Route path="/transactions" element={<Transactions />} />
                             <Route path="/notifications" element={<Notifications />} />
                             <Route path="/chat" element={<Chat />} />
+                            <Route path="/profile" element={<Profile />} />
                         </Route>
 
                         <Route element={<PrivateRoutes allowedRoles={[roles.admin]} />}>
@@ -61,6 +71,8 @@ function App() {
                                 <Route path="borrowHistory" element={<AdminBorrowHistory />} />
                                 <Route path="borrowHistory/:id" element={<AdminBorrowDetail />} />
                                 <Route path="transactions" element={<AdminTransactions />} />
+                                <Route path="profile" element={<AdminProfile />} />
+                                <Route path="notifications" element={<AdminNotifications />} />
                             </Route>
                         </Route>
 

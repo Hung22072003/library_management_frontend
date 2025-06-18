@@ -106,7 +106,10 @@ function Login() {
                         </div>
 
                         <div className="mt-[24px]">
-                            <a href="#" className="text-[14px] font-medium text-[#1B326D] hover:font-bold">
+                            <a
+                                href="/forgot-password/request-otp"
+                                className="text-[14px] font-medium text-[#1B326D] hover:font-bold"
+                            >
                                 Forgot password?
                             </a>
                         </div>
@@ -134,12 +137,12 @@ function Login() {
                         </button>
                     </div> */}
 
-                    <div className="text-center text-[14px] text-[#1B326D]">
+                    {/* <div className="text-center text-[14px] text-[#1B326D]">
                         Don't have an account?{' '}
                         <a href="/register" className="ml-[4px] font-medium text-[#1B326D] hover:font-bold">
                             Sign up
                         </a>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

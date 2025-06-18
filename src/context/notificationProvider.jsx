@@ -61,6 +61,8 @@ export const NotificationProvider = ({ children }) => {
 
     useEffect(() => {
         const fetchData = async () => {
+            const accessToken = localStorage.getItem('access_token');
+            if (!accessToken) return;
             const initialNotifications = await fetchNotifications();
             setUnreadCount(initialNotifications.data.filter((notif) => !notif.is_read).length);
             setNotifications(initialNotifications.data);

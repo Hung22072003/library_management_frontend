@@ -68,12 +68,12 @@ const BorrowHistory = () => {
                             <thead className="bg-gray-100 text-[16px] text-[#1B326D]">
                                 <tr>
                                     <th className="min-w-[200px] px-4 py-3 text-left">ID</th>
-                                    <th className="min-w-[120px] px-4 py-3 text-left">Status</th>
+                                    <th className="min-w-[160px] px-4 py-3 text-left">Status</th>
                                     <th className="min-w-[160px] px-4 py-3 text-left">Borrow Date</th>
                                     <th className="min-w-[160px] px-4 py-3 text-left">Due Date</th>
                                     <th className="min-w-[160px] px-4 py-3 text-left">Return Date</th>
                                     <th className="min-w-[200px] px-4 py-3 text-left">Expired Borrow Date</th>
-                                    <th className="min-w-[180px] px-4 py-3 text-left">Extend Date</th>
+                                    <th className="min-w-[160px] px-4 py-3 text-left">Extend Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">

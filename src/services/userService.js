@@ -18,4 +18,20 @@ const importUsers = (file) => {
     });
 };
 
-export { getUserFromToken, getAllUsers, importUsers };
+const createUser = async (userData) => {
+    return axios.post('api/users', userData, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+};
+
+const updateUser = async (id, data) => {
+    return axios.put(`api/users/${id}`, data, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+};
+
+export { getUserFromToken, getAllUsers, importUsers, createUser, updateUser };

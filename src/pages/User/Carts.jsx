@@ -5,6 +5,7 @@ import useCart from '../../hooks/useCart';
 import { formatCurrency } from '../../utils/FormatCurrency';
 import Loading from '../../components/Loading';
 import BorrowDateModal from '../../components/BorrowDateModal';
+import default_book from '../../assets/default-book.png';
 const Carts = () => {
     const { carts, loading, handleRemoveItem, openBorrowModal } = useCart();
 
@@ -27,55 +28,55 @@ const Carts = () => {
             <div className="pb-6">
                 <h2 className="mb-6 text-xl font-semibold text-[#1B326D]">Cart list</h2>
 
-                {carts.map((cart) => {
-                    const book = cart.book;
-                    return (
-                        <div key={cart.id} className="mb-4 overflow-hidden rounded-lg border border-gray-200 bg-white">
-                            <div className="flex p-4">
-                                <div className="h-36 w-24 flex-shrink-0 bg-gray-200">
-                                    {book.thumbnail ? (
+                {carts.length > 0 &&
+                    carts.map((cart) => {
+                        const book = cart.book;
+                        return (
+                            <div
+                                key={cart.id}
+                                className="mb-4 overflow-hidden rounded-lg border border-gray-200 bg-white"
+                            >
+                                <div className="flex p-4">
+                                    <div className="h-36 w-24 flex-shrink-0 bg-gray-200">
                                         <img
-                                            src={book.thumbnail}
-                                            alt={book.title}
+                                            src={book?.thumbnail || default_book}
+                                            alt={book?.title}
                                             className="h-full w-full object-cover"
                                         />
-                                    ) : (
-                                        <div className="flex h-full w-full items-center justify-center bg-gray-200 text-gray-400">
-                                            No image
+                                    </div>
+
+                                    <div className="flex-1 pl-4">
+                                        <div className="flex justify-between">
+                                            <h3 className="text-[16px] font-medium text-[#1B326D]">{book?.title}</h3>
+                                            <Button
+                                                type="text"
+                                                icon={<CloseOutlined />}
+                                                onClick={() => handleRemoveItem(cart.id)}
+                                                className="text-gray-500 hover:text-gray-800"
+                                            />
                                         </div>
-                                    )}
-                                </div>
 
-                                <div className="flex-1 pl-4">
-                                    <div className="flex justify-between">
-                                        <h3 className="text-[16px] font-medium text-[#1B326D]">{book.title}</h3>
-                                        <Button
-                                            type="text"
-                                            icon={<CloseOutlined />}
-                                            onClick={() => handleRemoveItem(cart.id)}
-                                            className="text-gray-500 hover:text-gray-800"
-                                        />
-                                    </div>
+                                        <p className="text-[14px] font-medium text-[#1B326D]">
+                                            Author: {book?.authors}
+                                        </p>
 
-                                    <p className="text-[14px] font-medium text-[#1B326D]">Author: {book.authors}</p>
+                                        <div className="mt-2 text-[14px]">
+                                            <span className="font-medium text-[#1B326D]">Genre:</span>{' '}
+                                            {book?.categories.map((a) => a.name).join(', ')}
+                                        </div>
 
-                                    <div className="mt-2 text-[14px]">
-                                        <span className="font-medium text-[#1B326D]">Genre:</span>{' '}
-                                        {book.categories.map((a) => a.name).join(', ')}
-                                    </div>
+                                        <div className="mt-2 text-[14px]">
+                                            <span className="font-medium text-[#1B326D]">Resource ID:</span> {book?.id}
+                                        </div>
 
-                                    <div className="mt-2 text-[14px]">
-                                        <span className="font-medium text-[#1B326D]">Resource ID:</span> {book.id}
-                                    </div>
-
-                                    <div className="mt-2 text-[14px]">
-                                        <span className="font-medium text-[#1B326D]">Copy ID:</span> {cart.copy_id}
+                                        <div className="mt-2 text-[14px]">
+                                            <span className="font-medium text-[#1B326D]">Copy ID:</span> {cart?.copy_id}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
 
                 <div className="mt-6 flex justify-end space-x-4">
                     <button

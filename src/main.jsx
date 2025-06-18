@@ -7,15 +7,15 @@ import { CartProvider } from './context/cartProvider.jsx';
 import { BatchDetailProvider } from './context/batchDetailProvider.jsx';
 import { NotificationProvider } from './context/notificationProvider.jsx';
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-        <AuthProvider>
-            <CartProvider>
-                <BatchDetailProvider>
-                    <NotificationProvider>
-                        <App />
-                    </NotificationProvider>
-                </BatchDetailProvider>
-            </CartProvider>
-        </AuthProvider>
-    </React.StrictMode>,
+    // <React.StrictMode>
+    <AuthProvider>
+        <CartProvider>
+            <BatchDetailProvider>
+                <NotificationProvider>
+                    <App />
+                </NotificationProvider>
+            </BatchDetailProvider>
+        </CartProvider>
+    </AuthProvider>,
+    // </React.StrictMode>,
 );

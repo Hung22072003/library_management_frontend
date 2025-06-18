@@ -23,7 +23,7 @@ import { formatDate } from '../../utils/FormatDateTime';
 import { formatCurrency } from '../../utils/FormatCurrency';
 import ReturnConfirmationModal from '../../components/ReturnConfirmationModal';
 import SingleReturnModal from '../../components/SingleReturnModal'; // Assume this component exists
-import { extendBatch } from '../../services/loanService';
+import { cancelBook, extendBatch } from '../../services/loanService';
 import { createTransaction, getTransactionsOfLoanBatch } from '../../services/transactionService';
 
 // Status tag colors mapping
@@ -38,8 +38,7 @@ const statusColors = {
 
 const LoanBatchDetail = () => {
     const { id } = useParams();
-    const { batchDetail, loading, loadBatchDetail, transactions, handleCancelBatch, handleConfirmBorrowed } =
-        useBatchDetail();
+    const { batchDetail, loading, loadBatchDetail, transactions, handleCancelBatch } = useBatchDetail();
     const [returnModalVisible, setReturnModalVisible] = useState(false);
     const [singleReturnModalVisible, setSingleReturnModalVisible] = useState(false);
     const [selectedDetail, setSelectedDetail] = useState(null);
@@ -163,6 +162,16 @@ const LoanBatchDetail = () => {
         }
     };
 
+    const handleCancelBook = async (detail) => {
+        try {
+            await cancelBook(detail.id);
+            message.success('Cancel book successfully');
+            loadBatchDetail(detail.batch_id);
+        } catch (error) {
+            console.error('Error returning batch:', error);
+            message.error('Failed to cancel batch');
+        }
+    };
     const canCancelConfirom = batchDetail && ['pending'].includes(batchDetail.status);
     const canExtend = batchDetail && !batchDetail.extended_at && ['borrowed'].includes(batchDetail.status);
 
@@ -186,22 +195,13 @@ const LoanBatchDetail = () => {
             dataIndex: 'copy_id',
             key: 'copy_id',
             width: 150,
-            render: (text) => (
-                <span
-                    onClick={() => {
-                        window.location.href = `/admin/copies/${text}`;
-                    }}
-                    className="cursor-pointer hover:font-bold"
-                >
-                    {text}
-                </span>
-            ),
+            render: (text) => <span>{text}</span>,
         },
         {
             title: 'Status',
             dataIndex: 'borrowed_status',
             key: 'borrowed_status',
-            width: 150,
+            width: 160,
             render: (text) => (
                 <span className={`rounded-md px-2 py-1 text-xs font-medium capitalize ${statusColors[text]}`}>
                     {text.toUpperCase()}
@@ -249,6 +249,29 @@ const LoanBatchDetail = () => {
                 if (record.returned_condition === 'good' || !record.returned_condition) {
                     return <div className="font-medium">{formatCurrency(0)}</div>;
                 }
+            },
+        },
+        {
+            title: 'Action',
+            key: 'action',
+            width: 150,
+            render: (_, record) => {
+                if (record.borrowed_status === 'pending') {
+                    return (
+                        <Popconfirm
+                            title="Cancel this book?"
+                            description="Are you sure you want to cancel this book? This action cannot be undone."
+                            onConfirm={() => handleCancelBook(record)}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Button type="primary" size="small" danger icon={<CloseCircleOutlined />}>
+                                Cance Book
+                            </Button>
+                        </Popconfirm>
+                    );
+                }
+                return null;
             },
         },
     ];

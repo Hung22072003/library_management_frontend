@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, Input, InputNumber, Button, Upload, message, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { FaTimes } from 'react-icons/fa';
-import axios from 'axios';
 import { getAllCategories } from '../../../services/categoryService';
-import { getAllAuthors } from '../../../services/authorService';
 import { getBookById, updateBook, deleteBook, restoreBook } from '../../../services/bookService'; // Updated service functions
 import { useNavigate, useParams } from 'react-router-dom';
 import Loading from '../../Loading';
-import { set } from 'lodash';
 const { Option } = Select;
 
 const BookDetail = () => {

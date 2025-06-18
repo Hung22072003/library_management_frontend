@@ -69,12 +69,12 @@ const Chat = () => {
             const intro = 'Here are some recommended books you might enjoy:\n\n';
             const html = response
                 .map((book, index) => {
-                    return `${index + 1}. <strong>${book.Book.trim()}</strong> by <i>${book.Authors.trim()}</i> <br>${book.Feedback.trim()}`;
+                    return `${index + 1}. <strong>${book.Book.trim()}</strong> by <i>${book.Authors.trim()}</i> <br>${book.Feedback ? book.Feedback.trim() : ''}`;
                 })
                 .join('<br><br>');
             const text = response
                 .map((book, index) => {
-                    return `${index + 1}. ${book.Book.trim()} by ${book.Authors.trim()}\n${book.Feedback.trim()}`;
+                    return `${index + 1}. ${book.Book.trim()} by ${book.Authors.trim()}\n${book.Feedback ? book.Feedback.trim() : ''}`;
                 })
                 .join('\n\n');
 
@@ -103,8 +103,8 @@ const Chat = () => {
                         inputRef.current?.focus();
                     }, 50);
                 }
-            }, 10);
-        }, 50);
+            }, 5);
+        }, 10);
     };
 
     const linkifyText = (text) => {

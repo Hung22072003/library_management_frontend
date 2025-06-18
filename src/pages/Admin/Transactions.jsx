@@ -30,7 +30,7 @@ const Transactions = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
-    const [paymentMethod, setPaymentMethod] = useState(PaymentMethodsEnum.VNPAY);
+    const [paymentMethod, setPaymentMethod] = useState(PaymentMethodsEnum.BANK_TRANSFER);
     const [processingPayment, setProcessingPayment] = useState(false);
     const size = 6;
 
@@ -224,16 +224,6 @@ const Transactions = () => {
                                         <strong>Select Payment Method:</strong>
                                     </p>
                                     <Radio.Group onChange={handlePaymentMethodChange} value={paymentMethod}>
-                                        <Radio value={PaymentMethodsEnum.VNPAY} className="mb-2 block">
-                                            <div className="flex items-center">
-                                                <span className="mr-2">VNPay</span>
-                                            </div>
-                                        </Radio>
-                                        <Radio value={PaymentMethodsEnum.MOMO} className="mb-2 block">
-                                            <div className="flex items-center">
-                                                <span className="mr-2">Momo</span>
-                                            </div>
-                                        </Radio>
                                         <Radio value={PaymentMethodsEnum.BANK_TRANSFER} className="block">
                                             <div className="flex items-center">
                                                 <span className="mr-2">Bank Transfer</span>

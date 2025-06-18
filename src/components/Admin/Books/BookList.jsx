@@ -3,11 +3,12 @@ import { Input, Pagination, Select } from 'antd';
 import { getAllBooks, getBooksByCategory } from '../../../services/bookService';
 import Loading from '../../Loading';
 import { getAllCategories } from '../../../services/categoryService';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import defaultBook from '../../../assets/default-book.png';
 
 const BooksList = () => {
+    const navigate = useNavigate();
     const [books, setBooks] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -74,6 +75,13 @@ const BooksList = () => {
         debounce((query) => fetchBooks(query), 300),
         [selectedCategory, currentPage],
     );
+
+    const handleCreateNewBook = () => {
+        navigate('/admin/books/create', {
+            replace: true,
+        });
+    };
+
     return (
         <div className="mx-auto max-w-[1200px]">
             <div className="flex items-center">
@@ -126,12 +134,12 @@ const BooksList = () => {
             </div>
             <div className="flex items-center justify-between">
                 <h1 className="my-[24px] text-[20px] font-bold text-[#1B326D]">Books List</h1>
-                <a
-                    href="/admin/books/create"
+                <span
+                    onClick={handleCreateNewBook}
                     className="flex cursor-pointer items-center rounded-[8px] border-[1px] bg-[#1B326D] p-[8px_24px] text-white"
                 >
                     Create new book
-                </a>
+                </span>
             </div>
             {loading ? (
                 <Loading />
@@ -153,6 +161,10 @@ const BooksList = () => {
                                     <th className="min-w-[180px] px-4 py-3 text-left">Status</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Num_Pages</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left">Language</th>
+                                    <th className="min-w-[80px] px-4 py-3 text-left">Floor</th>
+                                    <th className="min-w-[80px] px-4 py-3 text-left">Shelf</th>
+                                    <th className="min-w-[80px] px-4 py-3 text-left">Row</th>
+                                    <th className="min-w-[80px] px-4 py-3 text-left">Col</th>
                                     <th className="min-w-[180px] px-4 py-3 text-left"></th>
                                 </tr>
                             </thead>
@@ -198,10 +210,19 @@ const BooksList = () => {
                                         </td>
                                         <td className="px-4 py-3">{book.num_pages}</td>
                                         <td className="px-4 py-3">{book.language}</td>
+                                        <td className="px-4 py-3">{book.floor}</td>
+                                        <td className="px-4 py-3">{book.shelf}</td>
+                                        <td className="px-4 py-3">{book.row}</td>
+                                        <td className="px-4 py-3">{book.col}</td>
                                         <td className="px-4 py-3 text-center">
-                                            <a href={`/admin/books/${book.id}/copies`} className="hover:font-bold">
+                                            <span
+                                                onClick={() => {
+                                                    navigate(`/admin/books/${book.id}/copies`, { replace: true });
+                                                }}
+                                                className="cursor-pointer hover:font-bold"
+                                            >
                                                 Book Copies
-                                            </a>
+                                            </span>
                                         </td>
                                     </tr>
                                 ))}

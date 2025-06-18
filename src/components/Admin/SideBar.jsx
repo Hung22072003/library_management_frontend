@@ -6,10 +6,12 @@ import {
     faRightFromBracket,
     faDashboard,
     faUser,
+    faBell,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SideBarLink from '../SideBarLink';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
 const SideBar = () => {
     const list_navigation_admin = [
         {
@@ -37,13 +39,19 @@ const SideBar = () => {
             path: '/admin/transactions',
             icon: <FontAwesomeIcon icon={faMoneyBillTransfer} />,
         },
-        // {
-        //     label: 'Chat',
-        //     path: '/chat',
-        //     icon: <FontAwesomeIcon icon={faMessage} />,
-        // },
+        {
+            label: 'Notifications',
+            path: '/admin/notifications',
+            icon: <FontAwesomeIcon icon={faBell} />,
+        },
     ];
 
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+    const handleLogout = () => {
+        logout();
+        navigate('/', { replace: true });
+    };
     return (
         <div className="sticky top-0 left-0 flex h-full w-[256px] flex-col border-r-[1px] border-[#E5E7EB] bg-[#E3E7F3] shadow-[0_0_10px_0_rgba(0,0,0,0.1)]">
             <div className="flex items-center justify-center py-[25px]">
@@ -58,7 +66,7 @@ const SideBar = () => {
                 ))}
                 <div className="block cursor-pointer p-[12px_12px] text-[16px] font-medium text-[#1B326D]">
                     <FontAwesomeIcon icon={faRightFromBracket} className="mr-[10px]" />
-                    <span>Logout</span>
+                    <span onclick={handleLogout}>Logout</span>
                 </div>
             </div>
         </div>

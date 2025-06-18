@@ -71,6 +71,10 @@ const restoreBook = (id) => {
 const getAllBookCopiesOfOneBook = (id) => {
     return axios.get(`/api/books/bookcopies/${id}`);
 };
+
+const addBookCopies = (id, num) => {
+    return axios.post(`/api/books/${id}/bookcopies/add?num=${num}`);
+};
 export {
     getAllBooks,
     getBookById,
@@ -80,4 +84,5 @@ export {
     deleteBook,
     restoreBook,
     getAllBookCopiesOfOneBook,
+    addBookCopies,
 };

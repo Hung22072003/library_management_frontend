@@ -32,6 +32,10 @@ const returnOneBook = (data) => {
     return axios.post('/api/loans/detail/return', data);
 };
 
+const cancelBook = (id) => {
+    return axios.post(`/api/loans/detail/${id}/cancel`);
+};
+
 export {
     createLoanBatch,
     getBatchesOfUser,
@@ -41,4 +45,5 @@ export {
     returnBatch,
     extendBatch,
     returnOneBook,
+    cancelBook,
 };

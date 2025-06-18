@@ -110,7 +110,7 @@ const Books = () => {
     };
 
     const debouncedFetchBooks = useCallback(
-        debounce((query) => fetchBooks(query), 300),
+        debounce((query) => fetchBooks(query), 500),
         [selectedCategory, currentPage],
     );
 
@@ -123,7 +123,6 @@ const Books = () => {
         try {
             await createCart(currentBookId, selectedCopy.id);
             fetchCarts();
-            fetchBooks(searchTerm);
             message.success('Book added to cart successfully');
             setIsCopiesModalOpen(false);
             setSelectedCopy(null);
@@ -136,6 +135,9 @@ const Books = () => {
         setSelectedCopy(copy);
     };
 
+    if (loading) {
+        return <Loading />;
+    }
     return (
         <div>
             <div className="flex items-center">
@@ -191,24 +193,8 @@ const Books = () => {
             <div className="mt-[16px]">
                 <div className="mb-[16px] flex items-center justify-between">
                     <h1 className="text-[20px] leading-[24px] font-medium text-[#1B326D]">All books</h1>
-                    {totalBooks > size && (
-                        <div>
-                            <Pagination
-                                showSizeChanger={false}
-                                current={currentPage}
-                                onChange={handlePageChange}
-                                total={totalBooks}
-                                pageSize={size}
-                                align="center"
-                                className="text-[#1B326D]"
-                            />
-                        </div>
-                    )}
                 </div>
-
-                {loading ? (
-                    <Loading />
-                ) : (
+                <div>
                     <div className="space-y-[16px]">
                         {books &&
                             books.map((book) => (
@@ -250,12 +236,6 @@ const Books = () => {
                                             {/* Availability Info */}
                                             <div className="flex items-center gap-[24px] text-[14px]">
                                                 <span className="text-[#1B326D]">
-                                                    Total Copies:{' '}
-                                                    <span className="font-medium text-[#1B326D]">
-                                                        {book.total_copies}
-                                                    </span>
-                                                </span>
-                                                <span className="text-[#1B326D]">
                                                     Available:{' '}
                                                     <span
                                                         className={`font-medium ${book.available_copies > 0 ? 'text-green-600' : 'text-red-600'}`}
@@ -266,6 +246,12 @@ const Books = () => {
                                                 <span className="text-[#1B326D]">
                                                     Language:{' '}
                                                     <span className="font-medium text-[#1B326D]">{book.language}</span>
+                                                </span>
+                                                <span className="text-[#1B326D]">
+                                                    Location:{' '}
+                                                    <span className="font-medium text-[#1B326D]">
+                                                        {book.floor}.{book.shelf}.{book.row}.{book.col}
+                                                    </span>
                                                 </span>
                                             </div>
                                         </div>
@@ -295,7 +281,23 @@ const Books = () => {
                                 </div>
                             ))}
                     </div>
-                )}
+
+                    <div className="mt-[16px] flex items-center justify-center">
+                        {totalBooks > size && (
+                            <div>
+                                <Pagination
+                                    showSizeChanger={false}
+                                    current={currentPage}
+                                    onChange={handlePageChange}
+                                    total={totalBooks}
+                                    pageSize={size}
+                                    align="center"
+                                    className="text-[#1B326D]"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
 
                 {/* Book Details Modal */}
                 <Modal
@@ -344,9 +346,7 @@ const Books = () => {
                                 </p>
                                 <p className="mt-[12px] font-semibold text-[#9b9c9d]">
                                     Available Copies:
-                                    <span className="ml-[4px] text-[#1B326D]">
-                                        {selectedBook.available_copies} / {selectedBook.total_copies}
-                                    </span>
+                                    <span className="ml-[4px] text-[#1B326D]">{selectedBook.available_copies}</span>
                                 </p>
                                 <p className="mt-[12px] text-sm font-semibold text-[#9b9c9d]">
                                     Language:
@@ -356,6 +356,12 @@ const Books = () => {
                                 <p className="mt-[12px] text-sm font-semibold text-[#9b9c9d]">
                                     NumPages:
                                     <span className="ml-[4px] text-[#1B326D]">{selectedBook.num_pages}</span>
+                                </p>
+                                <p className="mt-[12px] text-sm font-semibold text-[#9b9c9d]">
+                                    Location:
+                                    <span className="ml-[4px] text-[#1B326D]">
+                                        {selectedBook.floor}.{selectedBook.shelf}.{selectedBook.row}.{selectedBook.col}
+                                    </span>
                                 </p>
                                 <p className="mt-4 font-semibold text-[#9b9c9d]">Description:</p>
 

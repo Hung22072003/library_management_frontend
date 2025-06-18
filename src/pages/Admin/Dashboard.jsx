@@ -54,18 +54,23 @@ const Dashboard = () => {
         try {
             setLoading(true);
             // Uncomment below for actual API calls:
-            const [booksQuantity, mostBorrowedBooks, returnStats, totalTransactions] = await Promise.all([
-                fetchData(`${API_BASE_URL}/books/quantity`),
-                fetchData(`${API_BASE_URL}/books/borrowed/most`),
-                fetchData(`${API_BASE_URL}/books/returned/late`),
-                fetchData(`${API_BASE_URL}/transactions/total`),
-            ]);
+            const [booksQuantity, mostBorrowedBooks, returnStats, totalTransactions, topUsers, dailyBorrows] =
+                await Promise.all([
+                    fetchData(`${API_BASE_URL}/books/quantity`),
+                    fetchData(`${API_BASE_URL}/books/borrowed/most`),
+                    fetchData(`${API_BASE_URL}/books/returned/late`),
+                    fetchData(`${API_BASE_URL}/transactions/total`),
+                    fetchData(`${API_BASE_URL}/users/borrowed/most`),
+                    fetchData(`${API_BASE_URL}/books/borrowed/eachday`),
+                ]);
 
             setData({
                 totalBooks: parseInt(booksQuantity.data),
                 mostBorrowedBooks: mostBorrowedBooks.data || [],
                 returnStats: returnStats.data || {},
                 totalTransactions: parseInt(totalTransactions.data),
+                topUsers: topUsers.data || [],
+                dailyBorrows: dailyBorrows.data || [],
             });
 
             setError(null);
@@ -77,31 +82,38 @@ const Dashboard = () => {
         }
     };
 
-    const fetchRemainingData = async () => {
-        try {
-            // Fetch top users and daily borrows
-            const [topUsers, dailyBorrows] = await Promise.all([
-                fetchData(`${API_BASE_URL}/users/borrowed/most`),
-                fetchData(`${API_BASE_URL}/books/borrowed/eachday`),
-            ]);
-
-            setData((prevData) => ({
-                ...prevData,
-                topUsers: topUsers.data || [],
-                dailyBorrows: dailyBorrows.data || [],
-            }));
-
-            setError(null);
-        } catch (err) {
-            console.error('Error fetching remaining data:', err);
-            setError('Failed to load additional data. Using demo data instead.');
-        }
-    };
-
     useEffect(() => {
         fetchAllData();
-        fetchRemainingData();
     }, []);
+    const CustomizedAxisTick = (props) => {
+        const { x, y, payload } = props;
+        const words = payload.value.split(' ');
+        const maxWidth = 80; // Maximum width for each line
+        const lines = [];
+        let currentLine = '';
+
+        words.forEach((word) => {
+            const testLine = currentLine ? `${currentLine} ${word}` : word;
+            if (testLine.length <= 12) {
+                // Approximate character limit per line
+                currentLine = testLine;
+            } else {
+                if (currentLine) lines.push(currentLine);
+                currentLine = word;
+            }
+        });
+        if (currentLine) lines.push(currentLine);
+
+        return (
+            <g transform={`translate(${x},${y})`}>
+                {lines.map((line, index) => (
+                    <text key={index} x={0} y={index * 12 + 3} dy={12} textAnchor="middle" fill="#666" fontSize="12">
+                        {line}
+                    </text>
+                ))}
+            </g>
+        );
+    };
 
     if (loading) {
         return <Loading />;
@@ -189,10 +201,13 @@ const Dashboard = () => {
                 <div className="mb-8">
                     <div className="rounded-lg bg-white p-6 shadow">
                         <h3 className="mb-4 text-lg font-semibold text-gray-900">Most Borrowed Books</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={data.mostBorrowedBooks}>
+                        <ResponsiveContainer width="100%" height={400}>
+                            <BarChart
+                                data={data.mostBorrowedBooks}
+                                margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+                            >
                                 <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="title" angle={-45} textAnchor="end" height={80} interval={0} />
+                                <XAxis dataKey="title" height={100} interval={0} tick={<CustomizedAxisTick />} />
                                 <YAxis />
                                 <Tooltip />
                                 <Bar dataKey="borrow_count" fill="#3B82F6" />
@@ -225,9 +240,9 @@ const Dashboard = () => {
                 </div>
 
                 {/* Bottom Section */}
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                     {/* Top Users */}
-                    <div className="rounded-lg bg-white p-6 shadow lg:col-span-2">
+                    <div className="rounded-lg bg-white p-6 shadow">
                         <h3 className="mb-4 text-lg font-semibold text-gray-900">Top Active Users</h3>
                         <div className="space-y-4">
                             {data.topUsers &&

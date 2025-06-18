@@ -14,7 +14,7 @@ const statusColors = {
 
 const PaymentMethodsEnum = {
     VNPAY: 'vnpay',
-    MOMO: 'momo',
+    // MOMO: 'momo',
 };
 
 const Transactions = () => {
@@ -216,11 +216,11 @@ const Transactions = () => {
                                                 <span className="mr-2">VNPay</span>
                                             </div>
                                         </Radio>
-                                        <Radio value={PaymentMethodsEnum.MOMO} className="mb-2 block">
+                                        {/* <Radio value={PaymentMethodsEnum.MOMO} className="mb-2 block">
                                             <div className="flex items-center">
                                                 <span className="mr-2">Momo</span>
                                             </div>
-                                        </Radio>
+                                        </Radio> */}
                                     </Radio.Group>
                                 </div>
                             </div>

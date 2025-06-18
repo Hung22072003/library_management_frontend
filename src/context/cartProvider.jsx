@@ -29,14 +29,11 @@ export const CartProvider = ({ children }) => {
 
     const handleRemoveItem = async (itemId) => {
         try {
-            setLoading(true);
             await deleteCart(itemId);
             setCarts(carts.filter((item) => item.id !== itemId));
             message.success('Remove item cart successfully');
         } catch (err) {
             message.error('Failed to remove item from cart');
-        } finally {
-            setLoading(false);
         }
     };
 

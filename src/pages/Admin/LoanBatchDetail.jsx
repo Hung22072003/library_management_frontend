@@ -22,7 +22,7 @@ import Loading from '../../components/Loading';
 import { formatDate } from '../../utils/FormatDateTime';
 import { formatCurrency } from '../../utils/FormatCurrency';
 import ReturnConfirmationModal from '../../components/ReturnConfirmationModal';
-import { extendBatch, returnBatch } from '../../services/loanService';
+import { cancelBook, extendBatch, returnBatch } from '../../services/loanService';
 import { createTransaction, getTransactionsOfLoanBatch } from '../../services/transactionService';
 import SingleReturnModal from '../../components/SingleReturnModal';
 
@@ -63,6 +63,17 @@ const LoanBatchDetail = () => {
     const handleSingleReturn = (detail) => {
         setSelectedDetail(detail);
         setSingleReturnModalVisible(true);
+    };
+
+    const handleCancelBook = async (detail) => {
+        try {
+            await cancelBook(detail.id);
+            message.success('Cancel book successfully');
+            loadBatchDetail(detail.batch_id);
+        } catch (error) {
+            console.error('Error returning batch:', error);
+            message.error('Failed to cancel batch');
+        }
     };
 
     const handleSingleReturnModalClose = (shouldRefresh) => {
@@ -312,6 +323,20 @@ const LoanBatchDetail = () => {
                         >
                             Return
                         </Button>
+                    );
+                } else if (record.borrowed_status === 'pending') {
+                    return (
+                        <Popconfirm
+                            title="Cancel this book?"
+                            description="Are you sure you want to cancel this book? This action cannot be undone."
+                            onConfirm={() => handleCancelBook(record)}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Button type="primary" size="small" danger icon={<CloseCircleOutlined />}>
+                                Cance Book
+                            </Button>
+                        </Popconfirm>
                     );
                 }
                 return null;
